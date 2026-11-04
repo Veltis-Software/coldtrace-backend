@@ -1,13 +1,13 @@
 # Plan de implementación
 
-Orden obligatorio: Fase 0 → 1 → 2 → 3. Dentro de una fase, las tareas sin dependencia pueden ir en paralelo (un agente por tarea).
+Orden obligatorio: Fase 0 → 1 → 2 → 3. Dentro de una fase se respetan las dependencias técnicas y la propiedad de cada repositorio.
 Cada tarea termina con: código + pruebas (suite crítica verde) + OpenAPI generado coincide con `contracts/` + PR a `develop` con Conventional Commits.
 
 ## Fase 0 — Estructura (Iteración 0 · ADR-0001…0004)
 
 | Tarea | Descripción | Depende de | Aceptación |
 |---|---|---|---|
-| T-01 | Crear repos `coldtrace-*` (ver ARCHITECTURE §4) con plantilla hexagonal, Maven, Actuator, springdoc, Flyway, logs JSON con `X-Correlation-Id`, Dockerfile multietapa y workflow de GitHub Actions. | — | `mvn verify` y build de imagen en CI. |
+| T-01 | Crear repos `coldtrace-*` (ver ARCHITECTURE §4) con estructura acorde con su responsabilidad, Maven, Actuator, springdoc, Flyway, logs JSON con `X-Correlation-Id`, Dockerfile multietapa y workflow de GitHub Actions. | — | `mvn verify` y build de imagen en CI. |
 | T-02 | `coldtrace-api-gateway`: rutas de ARCHITECTURE §4 (más específicas primero); rutas no extraídas → `coldtrace-backend`. Propaga JWT y `X-Correlation-Id`. | T-01 | Prueba de rutas: cada prefijo llega al destino correcto. |
 | T-03 | `coldtrace-infrastructure`: Docker Compose local (MySQL 8 con 8 esquemas y 8 usuarios con GRANT por esquema, emulador Pub/Sub en 8681, creación de tópicos y suscripciones de ARCHITECTURE §6). | — | `docker compose up` deja todo listo. |
 | T-04 | Reglas ArchUnit compartidas: `domain` no depende de Spring, JPA ni SDK de proveedores. | T-01 | Regla falla si se viola. |
@@ -34,15 +34,18 @@ Cada tarea termina con: código + pruebas (suite crítica verde) + OpenAPI gener
 | T-24 | report-service: `reading_aggregates` desde `readings.ingested`; reportes como trabajos asíncronos. | T-20 | Reporte no consulta `ct_monitoring`. |
 | **QA-02** | **Prueba de carga** (k6 o el simulador de T-13): 1 000 sensores en ventana de 10 s, en dev. | T-20…T-24 | p95 confirmación < 2 s; p99 evaluado y persistido < 5 s; notificación de desviación < 10 s. |
 
-## Fase 3 — Usabilidad (Iteración 3 · ADR-0013…0015 · QA-03)
+## Fase 3 — Interoperabilidad (Iteración 3 · ADR-0016 · QA-03)
 
 | Tarea | Descripción | Depende de | Aceptación |
 |---|---|---|---|
-| T-30 | `GET /alerts/{id}/detail` con `suggestedAssignee` y `allowedActions` según `contracts/openapi/alert-service.yaml`. | T-21 | Una sola llamada devuelve todo el contexto. |
-| T-31 | `POST/DELETE /alerts/{id}/acknowledgement` (migración `ct_alert/V2`); undo ≤ 10 s, luego `409 UNDO_WINDOW_EXPIRED`. | T-21 | Pruebas de transición OPEN↔ACKNOWLEDGED. |
-| T-32 | `GET /alerts/stream` (SSE) con `alert.updated`, keep-alive 25 s, filtro por organización. | T-31 | Dos sesiones: la segunda ve el cambio sin recargar. |
-| T-33 | Web App: ruta `/alerts/:id` (deep link, redirige tras login), vista de detalle responsive, botón “Reconocer y asignar”, toast con “Deshacer” 10 s, suscripción SSE. | T-30…T-32 | Confirmación visual < 2 s. |
-| **QA-03** | **Prueba de uso** con ≥ 10 participantes del segmento (celular y escritorio), sin ayuda. | T-30…T-33 | ≥ 90 % completa reconocer y asignar en < 1 min. |
+| T-30 | Registro versionado de perfiles y asociación sourceId–deviceUuid en Edge. | T-13 | Fuente desconocida, perfil duplicado y transporte no admitido se rechazan. |
+| T-31 | Adaptadores MQTT/JSON y HTTP/JSON hacia el mismo pipeline. | T-30 | Dos perfiles con campos diferentes producen unidades y tiempos canónicos. |
+| T-32 | Normalización de °F/°C a °C, %RH y UTC antes del buffer. | T-31 | 100 entradas válidas por perfil, error ≤ 0,01 °C; entradas no admitidas no consumen secuencia ni se almacenan. |
+| T-33 | Contrato canónico y contexto de origen persistido por Monitoring. | T-32 | Valida versión, identidad y unidades antes de evaluar; trazabilidad durable en cloud. |
+| T-34 | Administración de asociaciones y sustitución con historial (US03/29/30). | T-30 | Autorización por organización, una asociación activa y conservación del historial. |
+| QA-03 | Prueba integrada de incorporación del segundo perfil. | T-30…T-34 | Mismas reglas de evaluación, identidad conservada y rechazo sin efectos. |
+
+La atención de alertas (detalle, reconocimiento, asignación, deshacer y actualización) se conserva como incremento funcional de Sprint 1 y en ADR-0013 a ADR-0015.
 
 ## Fase 4 — Extracción del resto de contextos (Strangler Fig)
 

@@ -1,4 +1,4 @@
-workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - Grupo 13). Iteraciones ADD 0-3." {
+workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - Grupo 13). Iteraciones ADD 0-3. Disponibilidad, rendimiento e interoperabilidad." {
 
     !identifiers hierarchical
 
@@ -9,19 +9,29 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         sofia = person "Responsable de operaciones / calidad" "Supervisa varios activos y sedes, atiende incidencias y sustenta auditorías (User Persona: Sofía Ramírez)."
 
         sensors = softwareSystem "Sensores IoT" "Miden temperatura y humedad en cámaras, almacenes y transporte refrigerado." "External"
+        httpSources = softwareSystem "Fuentes HTTP/JSON" "Equipos compatibles que entregan lecturas mediante HTTP y un perfil de origen configurado." "External"
         notif = softwareSystem "Proveedores de notificación" "SendGrid (correo), FCM (Web Push) y WhatsApp Business API." "External"
         idp = softwareSystem "Google / Apple Identity" "Inicio de sesión externo mediante OAuth 2.0 / OIDC." "External"
         stripe = softwareSystem "Stripe" "Checkout, Customer Portal y Webhooks de suscripción." "External"
         ai = softwareSystem "Proveedor de IA" "OpenAI (desplegado) u Ollama (local) vía Spring AI." "External"
 
         coldtrace = softwareSystem "ColdTrace" "Plataforma web de monitoreo de cadena de frío." {
-            edge = container "Edge Gateway Agent" "Recibe lecturas por MQTT, las guarda localmente mientras no hay red y las reenvía en lotes; envía heartbeat cada 10 s." "Python, SQLite" "Edge"
+            edge = container "Edge Gateway Agent" "Adapta fuentes compatibles; conserva lecturas y lotes en SQLite durante cortes; reenvía con confirmación y heartbeat." "Python, SQLite" "Edge" {
+                profiles = component "Source Profile Resolver" "Resuelve fuente, dispositivo y perfil de conversión desde configuración versionada." "Application Service"
+                mqttInput = component "MQTT Input Adapter" "Recibe el tópico de una fuente configurada y extrae su payload JSON." "paho-mqtt"
+                httpInput = component "HTTP Input Adapter" "Recibe JSON de fuentes admitidas y valida su perfil de origen." "HTTP/JSON"
+                normalizer = component "Reading Normalizer" "Convierte unidades admitidas a °C y %RH, fechas a UTC y conserva identidad de origen." "Domain Service"
+                pipeline = component "Incorporation Pipeline" "Coordina resolución, normalización y escritura durable; rechaza entradas incompatibles antes de almacenar." "Application Service"
+                buffer = component "Durable Buffer" "SQLite WAL conserva secuencias y lotes estables hasta confirmación completa." "SQLite Repository"
+                sender = component "Durable Batch Sender" "Reintenta lotes canónicos v1 con la misma clave idempotente y envía heartbeat." "HTTP Adapter"
+            }
             web = container "Web Application" "Paneles de monitoreo, alertas, incidencias y reportes (responsive)." "Angular" "Web"
             gateway = container "API Gateway" "Punto de entrada único; enruta cada ruta al microservicio o al backend de referencia (Strangler Fig)." "Spring Cloud Gateway"
 
             identity = container "identity-service" "Usuarios, roles, organizaciones y sesiones (JWT)." "Java, Spring Boot"
             asset = container "asset-service" "Activos, rangos seguros, gateways y dispositivos." "Java, Spring Boot"
             monitoring = container "monitoring-service" "Ingesta de telemetría, evaluación de rango seguro y estado actual del activo." "Java, Spring Boot" {
+                validator = component "Canonical Contract Validator" "Valida versión, identidad, unidades canónicas y contexto antes de evaluar y persistir." "Application Service"
                 ingestion = component "Telemetry Ingestion" "Recibe lotes, valida la clave del dispositivo e inserta de forma idempotente." "Spring MVC Controller"
                 gap = component "Source Gap Detector" "Cada 10 s detecta fuentes sin heartbeat ni lecturas y marca el activo como 'sin datos'." "Spring @Scheduled"
                 evaluator = component "Safe Range Evaluator" "Evalúa la lectura contra la réplica local de rangos seguros." "Domain Service"
@@ -41,7 +51,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             aiService = container "ai-assistance-service" "Planes de resolución asistidos por IA con aprobación humana." "Java, Spring Boot, Spring AI"
             subscription = container "subscription-service" "Planes, suscripciones y webhooks de facturación." "Java, Spring Boot"
 
-            bus = container "Event Bus" "Tópicos threshold.breached (prioritario), source.gap, readings.ingested, asset.settings-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
+            bus = container "Event Bus" "Tópicos threshold.breached, source.gap, readings.ingested, asset.settings-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
             db = container "Cloud SQL" "Un esquema por microservicio; ningún servicio accede a tablas de otro." "MySQL 8" "Database"
         }
 
@@ -128,6 +138,21 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.alert.ackAssign -> coldtrace.db "Actualiza estado y responsable" "JDBC"
         coldtrace.alert.breachConsumer -> coldtrace.db "Abre incidencia, processed_events" "JDBC"
 
+        # --- Iteración 3: interoperabilidad sobre la ruta de las iteraciones 1 y 2 ---
+        rHttpEdge = httpSources -> coldtrace.edge "Entrega lecturas con perfil configurado" "HTTP/JSON"
+        sensors -> coldtrace.edge.mqttInput "Publica lecturas del dispositivo" "MQTT/JSON"
+        httpSources -> coldtrace.edge.httpInput "Entrega lectura de origen" "HTTP/JSON"
+        coldtrace.edge.mqttInput -> coldtrace.edge.pipeline "Entrega payload y sourceId"
+        coldtrace.edge.httpInput -> coldtrace.edge.pipeline "Entrega payload y sourceId"
+        coldtrace.edge.pipeline -> coldtrace.edge.profiles "Resuelve perfil vigente"
+        coldtrace.edge.pipeline -> coldtrace.edge.normalizer "Normaliza con el perfil resuelto"
+        coldtrace.edge.pipeline -> coldtrace.edge.buffer "Guarda lectura canónica y secuencia"
+        coldtrace.edge.sender -> coldtrace.edge.buffer "Obtiene lote estable y confirma entrega"
+        coldtrace.edge.sender -> coldtrace.gateway "Envía lote v1 y heartbeat" "HTTPS + Idempotency-Key"
+        coldtrace.edge.profiles -> coldtrace.asset "Obtiene configuración versionada vía API Gateway" "REST/JSON"
+        coldtrace.monitoring.ingestion -> coldtrace.monitoring.validator "Valida contrato canónico v1"
+        coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
+
         # --- Despliegue ---
         prod = deploymentEnvironment "Producción" {
             deploymentNode "Dispositivo del usuario" "Escritorio o móvil" "Navegador web" {
@@ -208,9 +233,24 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             autoLayout tb 200 150
         }
 
-        component coldtrace.alert "It3_Componentes_Alert" "Iteración 3 (Usabilidad) - Componentes de alert-service para reconocer y asignar una alerta." {
-            include gustavo sofia coldtrace.web coldtrace.bus notif coldtrace.db
-            include coldtrace.alert.alertDetail coldtrace.alert.ackAssign coldtrace.alert.stream coldtrace.alert.dispatcher coldtrace.alert.breachConsumer
+        container coldtrace "It3_Contenedores" "Iteración 3 (Interoperabilidad) - Fuentes compatibles sobre el pipeline asíncrono de la Iteración 2." {
+            include gustavo sofia sensors httpSources notif
+            include coldtrace.edge coldtrace.web coldtrace.gateway coldtrace.asset coldtrace.monitoring coldtrace.alert coldtrace.report coldtrace.bus coldtrace.db
+            exclude rSensorDirect rMonAlertSync rMonAssetSync
+            exclude "notif -> *"
+            autoLayout tb 200 150
+        }
+
+        component coldtrace.monitoring "It3_Componentes_Monitoring" "Iteración 3 (Interoperabilidad) - La validación canónica precede a la evaluación; se conservan réplica, proyección, detección de brechas y Outbox." {
+            include coldtrace.edge coldtrace.web coldtrace.monitoring.ingestion coldtrace.monitoring.validator coldtrace.monitoring.gap coldtrace.monitoring.evaluator coldtrace.monitoring.replica coldtrace.monitoring.projection coldtrace.monitoring.outbox coldtrace.bus coldtrace.db
+            exclude "coldtrace.monitoring.ingestion -> coldtrace.monitoring.evaluator"
+            autoLayout tb 200 150
+        }
+
+        component coldtrace.edge "It3_Componentes_Edge" "Iteración 3 (Interoperabilidad) - Adaptadores MQTT y HTTP, perfiles y normalización antes del buffer y reenvío durable de la Iteración 1." {
+            include sensors httpSources coldtrace.gateway coldtrace.asset
+            include coldtrace.edge.mqttInput coldtrace.edge.httpInput coldtrace.edge.pipeline coldtrace.edge.profiles coldtrace.edge.normalizer coldtrace.edge.buffer coldtrace.edge.sender
+            exclude rSensorDirect
             autoLayout tb 200 150
         }
 

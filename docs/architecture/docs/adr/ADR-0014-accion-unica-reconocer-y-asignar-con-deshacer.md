@@ -2,8 +2,8 @@
 
 - **Estado:** Aceptado
 - **Fecha:** 2026-10-09
-- **Iteración ADD:** Iteración 3 (Usabilidad)
-- **Trazabilidad:** DD-16 (DC-20) · Drivers: QA-03, US08, US09
+- **Ámbito:** Atención funcional de alertas, Sprint 1
+- **Trazabilidad:** US08 y US09
 
 ## Contexto
 Dos pasos separados aumentan el tiempo y los errores del usuario.

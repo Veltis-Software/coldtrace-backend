@@ -1,22 +1,24 @@
 # ColdTrace — Decisión arquitectónica consolidada
 
-> Versión 1.0 · 2026-10-09 · Trazable al Capítulo IV del informe TF (secciones 4.1–4.3) y a los ADR de `docs/adr/`.
+> Versión 1.1 · 2026-11-03 · Trazable al Capítulo IV del informe TF (secciones 4.1–4.3) y a los ADR de `docs/adr/`.
 
 ## 1. Decisión en una frase
 
-ColdTrace evoluciona su backend brownfield (Java/Spring Boot, monolito modular por Bounded Contexts) hacia **8 microservicios cloud-native en Google Cloud Run, uno por Bounded Context, detrás de un API Gateway**, con **base de datos por servicio** (un esquema MySQL por servicio en Cloud SQL), **mensajería asíncrona con Pub/Sub + Transactional Outbox** para la telemetría y las alertas, y un **Edge Gateway Agent** en el local del cliente que garantiza la continuidad del dato. La migración es incremental con **Strangler Fig**.
+ColdTrace evoluciona su backend brownfield (Java/Spring Boot, monolito modular por Bounded Contexts) hacia **8 microservicios cloud-native en Google Cloud Run, uno por Bounded Context, detrás de un API Gateway**, con **base de datos por servicio** (un esquema MySQL por servicio en Cloud SQL), **mensajería asíncrona con Pub/Sub + Transactional Outbox** para la telemetría y las alertas, y un **Edge Gateway Agent** en el local del cliente que conserva las lecturas durante interrupciones de conectividad. La migración es incremental con **Strangler Fig**.
 
-## 2. Drivers (lo único que guía el diseño)
+## 2. Drivers arquitectónicos
 
-Solo hay **tres atributos de calidad**, priorizados por los Business Goals y los usuarios del producto. Todo lo demás es restricción o principio, no driver.
+Los atributos priorizados son disponibilidad, rendimiento e interoperabilidad. El diseño también considera la funcionalidad primaria, restricciones y concerns arquitectónicos. La atención guiada y el control de errores de interacción forman parte de los requisitos funcionales del producto.
 
 | ID | Atributo | Business Goal | Escenario medible (criterio de aceptación arquitectónico) |
 |---|---|---|---|
 | QA-01 | Disponibilidad | BG01 | Ante un corte de red del gateway, el activo se muestra como **NO_DATA ≤ 30 s** después del umbral; al reconectar, **100 %** de lecturas retenidas se incorpora **sin duplicados en ≤ 5 min**. |
 | QA-02 | Rendimiento | BG01, BG02 | Con **1 000 sensores** enviando en una ventana de 10 s: **p95 < 2 s** de confirmación (202), **p99 < 5 s** evaluado y persistido, **notificación < 10 s** desde la recepción de una lectura fuera de rango. |
-| QA-03 | Usabilidad | BG02 | **≥ 90 %** de usuarios reconoce y asigna una alerta en **< 1 min** sin ayuda; confirmación visual **< 2 s**. |
+| QA-03 | Interoperabilidad | BG01, BG03, BG04 | Dos perfiles MQTT/JSON y HTTP/JSON producen lecturas canónicas v1 con identidad, °C, %RH y UTC. Se aceptan 100 casos válidos por perfil, con error de conversión ≤ 0,01 °C; versiones y unidades no admitidas se rechazan antes de persistir. Incorporar el segundo perfil no modifica las reglas de evaluación. |
 
-**Primary User Stories:** US04, US06, US08, US09, US14, US16, US33, US46, US47.
+**Primary User Stories del ADD:** US03, US04, US06, US14, US16, US29, US30, US46, US47.
+**Incremento Sprint 1:** US04, US06, US08, US09, US14, US16, US33, US46 y US47.
+**Incrementos Sprint 2:** perfiles y adaptadores Edge, más validación y persistencia del contexto canónico en Monitoring. La administración completa de asociaciones y consulta de fuentes continúa como US03, US29 y US30.
 **Constraints:** CON-01 brownfield · CON-02 microservicios + DDD + cloud-native · CON-03 Java/Spring Boot · CON-04 MySQL/Cloud SQL · CON-05 REST + OpenAPI · CON-06 contenedores en Google Cloud · CON-07 Stripe, OAuth/OIDC e IA detrás de adaptadores.
 
 ### Tácticas (3 por atributo)
@@ -24,27 +26,27 @@ Solo hay **tres atributos de calidad**, priorizados por los Business Goals y los
 | Atributo | Táctica | Implementación | ADR |
 |---|---|---|---|
 | Disponibilidad | Heartbeat + Timestamp (detectar) | Heartbeat del gateway cada 10 s; `SourceGapDetector` cada 10 s | ADR-0007 |
-| Disponibilidad | Redundancia activa + resincronización de estado/retry (recuperar) | Store-and-forward en el Edge Agent; `min-instances=1` en monitoring y alert | ADR-0005, ADR-0008 |
+| Disponibilidad | Almacenamiento durable, reintentos y resincronización (recuperar) | Store-and-forward y confirmación de lotes en Edge; una instancia mínima evita escala a cero, sin acreditar redundancia | ADR-0005, ADR-0008 |
 | Disponibilidad | Transacciones (prevenir) | Ingesta idempotente: UK `(iot_device_id, recorded_at, sequence_number)` + `Idempotency-Key` | ADR-0006 |
-| Rendimiento | Priorizar eventos | Tópico `threshold.breached` separado y con suscripción dedicada | ADR-0009 |
-| Rendimiento | Introducir concurrencia + limitar colas | Pub/Sub push, inserción por lotes (≤ 500), autoescalado Cloud Run, `maxOutstandingMessages` | ADR-0009, ADR-0010 |
+| Rendimiento | Aislar el tratamiento de eventos críticos | Tópico `threshold.breached` separado y con suscripción dedicada | ADR-0009 |
+| Rendimiento | Introducir concurrencia + limitar colas | Pub/Sub push, inserción por lotes (≤ 500), límites de concurrencia y capacidad de consumidores en Cloud Run | ADR-0009, ADR-0010 |
 | Rendimiento | Mantener múltiples copias de datos | `safe_range_replica`, `asset_current_state`, `reading_aggregates` | ADR-0011, ADR-0012 |
-| Usabilidad | Aggregate | `POST /alerts/{id}/acknowledgement` reconoce **y** asigna en 1 transacción | ADR-0014 |
-| Usabilidad | Undo | `DELETE /alerts/{id}/acknowledgement` dentro de 10 s | ADR-0014 |
-| Usabilidad | Maintain task/user model | Deep link `/alerts/{id}`, endpoint de detalle con contexto y responsable sugerido, SSE | ADR-0013, ADR-0015 |
+| Interoperabilidad | Discover Service | Registro explícito de sourceId, dispositivo y perfil versionado | ADR-0016 |
+| Interoperabilidad | Tailor Interface | Adaptadores MQTT/JSON y HTTP/JSON, conversión de unidades y tiempos | ADR-0016 |
+| Interoperabilidad | Orchestrate | Pipeline de resolución, validación, normalización y almacenamiento durable | ADR-0016 |
 
 ## 3. Stack fijo
 
 | Capa | Tecnología (no cambiar sin ADR) |
 |---|---|
-| Microservicios | Java 21, Spring Boot 3.3.x, arquitectura hexagonal (`domain`, `application`, `infrastructure`, `interfaces.rest`), Maven |
-| API Gateway | Spring Cloud Gateway |
+| Microservicios | Java 21, Spring Boot 3.3.x y Maven. Separación de dominio, aplicación y adaptadores donde existen reglas e integraciones variables |
+| API Gateway | Spring Cloud Gateway con rutas, filtros y configuración; sin un dominio artificial |
 | Persistencia | MySQL 8 (Cloud SQL), Spring Data JPA, **Flyway** por servicio |
 | Mensajería | Google Cloud Pub/Sub (`spring-cloud-gcp-starter-pubsub`), emulador en local |
 | Documentación API | springdoc-openapi (Swagger UI en `/swagger-ui.html`, spec en `/v3/api-docs`) |
 | Observabilidad | Spring Boot Actuator, logs JSON con `X-Correlation-Id`, Cloud Logging / Cloud Monitoring |
 | Frontend | Web Application Angular existente (Firebase Hosting) |
-| Edge Gateway Agent | Python 3.12, `paho-mqtt`, SQLite, `httpx` |
+| Edge Gateway Agent | Python 3.12, `paho-mqtt`, SQLite y adaptador HTTP de entrada |
 | Despliegue | Docker multietapa → Artifact Registry → Cloud Run (`southamerica-west1`), GitHub Actions |
 | Pruebas | JUnit 5, Mockito, ArchUnit, Testcontainers (MySQL, emulador Pub/Sub), Cucumber (Gherkin) |
 
@@ -115,7 +117,7 @@ En `dev` los tópicos llevan sufijo `-dev` (p. ej. `threshold.breached-dev`). So
 
 1. **Lectura normal (QA-02):** Edge Agent → `POST /telemetry/batches` → monitoring evalúa contra `safe_range_replica` → en **una transacción**: `INSERT sensor_readings` + `UPSERT asset_current_state` + `INSERT outbox_events` → `202 {accepted, duplicated}` → Outbox Relay (cada 500 ms) publica → alert-service abre incidencia y notifica con deep link.
 2. **Corte de red (QA-01):** Edge Agent retiene en SQLite y reintenta con backoff (1 s → 60 s máx.) → `SourceGapDetector` (cada 10 s) detecta `now - max(last_heartbeat_at, última lectura) > umbral` → `asset_current_state.status = NO_DATA` y evento `source.gap` → alert-service avisa (incidencia `type = NO_DATA`). Al reconectar: reenvío en orden de `recorded_at`, inserción idempotente, cierre de la brecha.
-3. **Atención (QA-03):** notificación con `{WEB_BASE_URL}/alerts/{incidentId}` → `GET /alerts/{id}/detail` → `POST /alerts/{id}/acknowledgement {assigneeUserId}` → 200 + SSE `alert.updated` → undo con `DELETE` ≤ 10 s.
+3. **Atención funcional (US08, US09 y US33):** notificación con `{WEB_BASE_URL}/alerts/{incidentId}` → `GET /alerts/{id}/detail` → `POST /alerts/{id}/acknowledgement {assigneeUserId}` → 200 + SSE `alert.updated` → undo con `DELETE` ≤ 10 s.
 
 ### Reglas de negocio fijadas
 
@@ -131,7 +133,11 @@ En `dev` los tópicos llevan sufijo `-dev` (p. ej. `threshold.breached-dev`). So
 | Responsable sugerido | Usuario que reconoció la incidencia más reciente del mismo activo en los últimos 30 días; si no hay, el usuario autenticado |
 | Estado del activo | `NORMAL`, `OUT_OF_RANGE`, `NO_DATA` |
 
+4. **Interoperabilidad (QA-03):** sourceId → perfil versionado → adaptador MQTT/HTTP → normalización a °C, %RH y UTC → SQLite → lote estable → validación canónica en Monitoring → evaluación, Outbox y consumidores.
+
 ## 8. Despliegue
+
+Proyecto de desarrollo: `veltis-coldtrace-dev` (`311618880556`). La tabla describe la asignación objetivo; el estado ejecutado se registra por sprint. Edge requiere almacenamiento persistente en el local del cliente.
 
 | Nodo | Elementos | Configuración |
 |---|---|---|
