@@ -156,6 +156,13 @@ public class SourceConfigurationsController {
                     + " saving"));
   }
 
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ProblemDetail> authorizationFailure(ResponseStatusException exception) {
+    return ResponseEntity.status(exception.getStatusCode())
+        .body(ProblemDetail.forStatusAndDetail(exception.getStatusCode(),
+            exception.getReason() == null ? "Access to this source configuration is not allowed" : exception.getReason()));
+  }
+
   public record ConfigurationRequest(
       @tools.jackson.databind.annotation.JsonDeserialize(using = StrictLong.class)
           @NotNull

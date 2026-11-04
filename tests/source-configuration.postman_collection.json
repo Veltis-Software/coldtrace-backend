@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "ColdTrace Source Configuration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8088"
+    },
+    {
+      "key": "organizationId",
+      "value": ""
+    },
+    {
+      "key": "deviceId",
+      "value": ""
+    },
+    {
+      "key": "gatewayId",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Current source configuration",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/iot-devices/{{deviceId}}/source-configuration"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Current configuration exists',()=>pm.response.to.have.status(200));",
+              "pm.test('Canonical contract and immutable device are present',()=>{const c=pm.response.json();pm.expect(c.profile.schemaVersion).to.eql(1);pm.expect(c.deviceId).to.eql(Number(pm.variables.get('deviceId')));pm.expect(c.configurationVersion).to.be.above(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Immutable replacement history",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/iot-devices/{{deviceId}}/source-configuration/history"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('History can be queried',()=>pm.response.to.have.status(200));",
+              "pm.test('Revisions are ordered and preserve the same asset',()=>{const h=pm.response.json();pm.expect(h.length).to.be.at.least(2);pm.expect(h[0].configurationVersion).to.be.above(h[1].configurationVersion);pm.expect(h[0].assetId).to.eql(h[1].assetId);pm.expect(h[0].profile.sourceId).not.to.eql(h[1].profile.sourceId);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stale version cannot overwrite replacement",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/iot-devices/{{deviceId}}/source-configuration",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"assetId\":{{assetId}},\"expectedVersion\":0,\"sourceId\":\"sonda-camara-lacteos-01\",\"transport\":\"mqtt\",\"profileVersion\":1,\"schemaVersion\":1,\"fields\":{\"temperature\":\"temp_c\",\"humidity\":\"relative_humidity\",\"recordedAt\":\"measured_at\"},\"temperatureUnit\":\"C\",\"humidityUnit\":\"%RH\",\"reason\":\"Verificación de control de concurrencia\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Stale version returns conflict',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Another organization cannot be queried",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/999999999/iot-devices/{{deviceId}}/source-configuration"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Tenant isolation rejects foreign organization',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export compatible Edge profile document",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/gateways/{{gatewayId}}/source-profiles"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Gateway export exists',()=>pm.response.to.have.status(200));",
+              "pm.test('Export uses Edge schema and source profile',()=>{const d=pm.response.json();pm.expect(d.schemaVersion).to.eql(1);pm.expect(d.sources.length).to.be.above(0);pm.expect(d.sources[0]).to.have.keys('sourceId','deviceUuid','transport','profileVersion','fields','temperatureUnit','humidityUnit');});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
