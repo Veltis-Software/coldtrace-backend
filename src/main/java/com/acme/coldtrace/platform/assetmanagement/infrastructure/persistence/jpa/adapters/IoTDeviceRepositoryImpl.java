@@ -42,6 +42,12 @@ public class IoTDeviceRepositoryImpl implements IoTDeviceRepository {
                 .map(IoTDevicePersistenceAssembler::toDomainFromPersistence);
     }
 
+    @Override
+    public Optional<IoTDevice> lockByIdAndOrganizationId(Long id, Long organizationId) {
+        return iotDevicePersistenceRepository.lockByIdAndOrganizationId(id, organizationId)
+                .map(IoTDevicePersistenceAssembler::toDomainFromPersistence);
+    }
+
     /**
      * {@inheritDoc}
      */

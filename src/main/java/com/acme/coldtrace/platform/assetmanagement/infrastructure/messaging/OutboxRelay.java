@@ -49,7 +49,7 @@ public class OutboxRelay {
     // Acknowledgement may be lost after publication: consumers deduplicate by eventId.
     var rows =
         jdbc.queryForList(
-            "SELECT id,event_id,'asset.settings-changed' AS event_type,payload FROM asset_integration_outboxes WHERE published_at IS NULL"
+            "SELECT id,event_id,payload FROM asset_integration_outboxes WHERE published_at IS NULL"
                 + " ORDER BY id LIMIT 50 FOR UPDATE SKIP LOCKED");
     for (var row : rows) {
       long id = ((Number) row.get("id")).longValue();
@@ -60,12 +60,15 @@ public class OutboxRelay {
                 ? new String(bytes, StandardCharsets.UTF_8)
                 : raw.toString();
         var envelope = json.readTree(payload);
+        var eventType = envelope.path("eventType").asText();
+        if (!Set.of("asset.settings-changed", "source.configuration-changed").contains(eventType))
+          throw new IllegalStateException("Unsupported asset integration event");
         var attributes =
             Map.of(
                 "eventId",
                 row.get("event_id").toString(),
                 "eventType",
-                row.get("event_type").toString(),
+                eventType,
                 "version",
                 envelope.path("version").asText(),
                 "organizationId",
@@ -80,7 +83,7 @@ public class OutboxRelay {
             broker
                 .post()
                 .uri(
-                    "/v1/projects/{project}/topics/{topic}:publish", project, row.get("event_type"))
+                    "/v1/projects/{project}/topics/{topic}:publish", project, eventType)
                 .body(Map.of("messages", List.of(message)))
                 .retrieve()
                 .body(Map.class);
