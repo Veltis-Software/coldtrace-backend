@@ -51,7 +51,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             aiService = container "ai-assistance-service" "Planes de resolución asistidos por IA con aprobación humana." "Java, Spring Boot, Spring AI"
             subscription = container "subscription-service" "Planes, suscripciones y webhooks de facturación." "Java, Spring Boot"
 
-            bus = container "Event Bus" "Tópicos threshold.breached, source.gap, readings.ingested, asset.settings-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
+            bus = container "Event Bus" "Tópicos threshold.breached, source.gap, readings.ingested, asset.settings-changed, source.configuration-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
             db = container "Cloud SQL" "Un esquema por microservicio; ningún servicio accede a tablas de otro." "MySQL 8" "Database"
         }
 
@@ -79,7 +79,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
 
         coldtrace.gateway -> coldtrace.identity "Enruta /authentication, /users" "REST/JSON"
         coldtrace.gateway -> coldtrace.asset "Enruta /assets, /devices" "REST/JSON"
-        coldtrace.gateway -> coldtrace.monitoring "Enruta /telemetry, /assets/{id}/state" "REST/JSON"
+        coldtrace.gateway -> coldtrace.monitoring "Enruta telemetría y estado" "REST/JSON"
         coldtrace.gateway -> coldtrace.alert "Enruta /alerts, /incidents" "REST/JSON"
         coldtrace.gateway -> coldtrace.report "Enruta /reports" "REST/JSON"
         coldtrace.gateway -> coldtrace.maintenance "Enruta /maintenance" "REST/JSON"
@@ -92,10 +92,10 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
 
         # Iteración 2: mensajería asíncrona
         rMonBus = coldtrace.monitoring -> coldtrace.bus "Publica threshold.breached, source.gap, readings.ingested" "Pub/Sub"
-        rAssetBus = coldtrace.asset -> coldtrace.bus "Publica asset.settings-changed" "Pub/Sub"
+        rAssetBus = coldtrace.asset -> coldtrace.bus "Publica cambios de rangos y fuentes" "Pub/Sub"
         rBusAlert = coldtrace.bus -> coldtrace.alert "Entrega threshold.breached, source.gap" "Push autenticado"
         rBusReport = coldtrace.bus -> coldtrace.report "Entrega readings.ingested" "Push autenticado"
-        rBusMon = coldtrace.bus -> coldtrace.monitoring "Entrega asset.settings-changed" "Push autenticado"
+        rBusMon = coldtrace.bus -> coldtrace.monitoring "Entrega cambios de rangos y fuentes" "Push autenticado"
 
         coldtrace.identity -> coldtrace.db "Lee/escribe esquema identity" "JDBC"
         coldtrace.asset -> coldtrace.db "Lee/escribe esquema asset" "JDBC"
@@ -149,7 +149,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.edge.pipeline -> coldtrace.edge.buffer "Guarda lectura canónica y secuencia"
         coldtrace.edge.sender -> coldtrace.edge.buffer "Obtiene lote estable y confirma entrega"
         coldtrace.edge.sender -> coldtrace.gateway "Envía lote v1 y heartbeat" "HTTPS + Idempotency-Key"
-        coldtrace.edge.profiles -> coldtrace.asset "Obtiene configuración versionada vía API Gateway" "REST/JSON"
+        coldtrace.asset -> coldtrace.edge.profiles "Exporta perfiles versionados para recarga local" "Archivo JSON administrado"
         coldtrace.monitoring.ingestion -> coldtrace.monitoring.validator "Valida contrato canónico v1"
         coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
 
