@@ -18,7 +18,7 @@ Los atributos priorizados son disponibilidad, rendimiento e interoperabilidad. E
 
 **Primary User Stories del ADD:** US03, US04, US06, US14, US16, US29, US30, US46, US47.
 **Incremento Sprint 1:** US04, US06, US08, US09, US14, US16, US33, US46 y US47.
-**Incrementos Sprint 2:** perfiles y adaptadores Edge, más validación y persistencia del contexto canónico en Monitoring. La administración completa de asociaciones y consulta de fuentes continúa como US03, US29 y US30.
+**Incrementos Sprint 2:** perfiles y adaptadores Edge con recarga validada, administración y consulta de asociaciones con historial, y réplica de revisiones en Monitoring para comprobar el origen efectivo de cada lectura. La migración conserva el buffer y los reintentos; el despliegue cloud se integra progresivamente.
 **Constraints:** CON-01 brownfield · CON-02 microservicios + DDD + cloud-native · CON-03 Java/Spring Boot · CON-04 MySQL/Cloud SQL · CON-05 REST + OpenAPI · CON-06 contenedores en Google Cloud · CON-07 Stripe, OAuth/OIDC e IA detrás de adaptadores.
 
 ### Tácticas (3 por atributo)

@@ -71,18 +71,19 @@ deployment; it does not migrate or rewrite existing telemetry.
 ## Integration boundary
 
 The gateway export is an operator-authorized document matching Edge's registry.
-It is not a device credential. Provision it to the Edge profile file and restart
-the agent using its existing read-only configuration mount. Replacement becomes
-effective for ingress when Edge loads the new profile; registration alone does
-not remotely revoke an already running Edge process.
+It is not a device credential. Provision it by atomically replacing the Edge profile
+file in its read-only configuration-directory mount. Edge revalidates that file
+every five seconds and swaps the complete registry without rewriting its buffer.
+Invalid replacements retain the last valid configuration.
 
 The existing emulator relay now chooses the topic from the event envelope, allowing
-both `asset.settings-changed` and `source.configuration-changed`. The source topic,
-its consumers, authenticated cloud relay and configuration synchronization still
-need the deployment integration. Monitoring currently persists source metadata;
-it does not yet enforce this registry remotely. Consequently the complete US03/29
-acceptance includes integrated rollout and rejection of the retired source, beyond
-this administration increment.
+both `asset.settings-changed` and `source.configuration-changed`. Infrastructure
+creates the local source topic/subscription; Monitoring projects ordered,
+deduplicated revisions and enforces the source/profile effective at capture time.
+Buffered readings preceding the replacement remain admissible and later readings
+from the retired source are rejected atomically. The cloud relay still requires
+authenticated delivery and deployment configuration; the local emulator adapter
+must not be exposed as an unauthenticated cloud endpoint.
 
 ## Verification
 
