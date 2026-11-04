@@ -23,11 +23,11 @@ disponibilidad. La ruta cloud mantiene validación, evaluación con réplica loc
 proyección de estado, persistencia con Outbox y publicación asíncrona. Monitoring
 debe validar y persistir el contrato y contexto canónicos antes de evaluar.
 
-El primer incremento de Sprint 2 implementa el registro local, los adaptadores y
-la normalización en `coldtrace-edge-gateway`. La administración de asociaciones
-por organización, su historial y la persistencia del contexto canónico en
-Monitoring se realizan como incrementos siguientes; las historias completas
-conservan su estado de trabajo hasta integrar esos criterios.
+Sprint 2 implementa el registro local, los adaptadores y la normalización en
+`coldtrace-edge-gateway`, seguidos por validación y persistencia del contexto
+canónico en Monitoring. La administración de asociaciones por organización y su
+historial continúa como incremento siguiente; las historias completas conservan
+su estado de trabajo hasta integrar esos criterios.
 
 ## Consecuencias y verificación
 
