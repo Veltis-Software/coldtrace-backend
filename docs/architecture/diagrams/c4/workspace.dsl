@@ -31,6 +31,8 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             identity = container "identity-service" "Usuarios, roles, organizaciones y sesiones (JWT)." "Java, Spring Boot"
             asset = container "asset-service" "Activos, rangos seguros, gateways y dispositivos." "Java, Spring Boot"
             monitoring = container "monitoring-service" "Ingesta de telemetría, evaluación de rango seguro y estado actual del activo." "Java, Spring Boot" {
+                sourceConsumer = component "Source Configuration Consumer" "Procesa revisiones consecutivas y deduplica eventos de asociación por dispositivo." "Application Service"
+                sourceHistory = component "Source Assignment History" "Conserva revisiones y valida fuente y perfil efectivos en el momento de captura." "Domain Repository"
                 validator = component "Canonical Contract Validator" "Valida versión, identidad, unidades canónicas y contexto antes de evaluar y persistir." "Application Service"
                 ingestion = component "Telemetry Ingestion" "Recibe lotes, valida la clave del dispositivo e inserta de forma idempotente." "Spring MVC Controller"
                 gap = component "Source Gap Detector" "Cada 10 s detecta fuentes sin heartbeat ni lecturas y marca el activo como 'sin datos'." "Spring @Scheduled"
@@ -153,6 +155,10 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.monitoring.ingestion -> coldtrace.monitoring.validator "Valida contrato canónico v1"
         coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
 
+        coldtrace.bus -> coldtrace.monitoring.sourceConsumer "source.configuration-changed" "Pub/Sub"
+        coldtrace.monitoring.sourceConsumer -> coldtrace.monitoring.sourceHistory "Aplica revisiones en orden"
+        coldtrace.monitoring.ingestion -> coldtrace.monitoring.sourceHistory "Verifica asociación efectiva"
+        coldtrace.monitoring.sourceHistory -> coldtrace.db "Consulta revisiones locales" "JDBC"
         # --- Despliegue ---
         prod = deploymentEnvironment "Producción" {
             deploymentNode "Dispositivo del usuario" "Escritorio o móvil" "Navegador web" {
@@ -242,7 +248,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         }
 
         component coldtrace.monitoring "It3_Componentes_Monitoring" "Iteración 3 (Interoperabilidad) - La validación canónica precede a la evaluación; se conservan réplica, proyección, detección de brechas y Outbox." {
-            include coldtrace.edge coldtrace.web coldtrace.monitoring.ingestion coldtrace.monitoring.validator coldtrace.monitoring.gap coldtrace.monitoring.evaluator coldtrace.monitoring.replica coldtrace.monitoring.projection coldtrace.monitoring.outbox coldtrace.bus coldtrace.db
+            include coldtrace.monitoring.sourceConsumer coldtrace.monitoring.sourceHistory coldtrace.edge coldtrace.web coldtrace.monitoring.ingestion coldtrace.monitoring.validator coldtrace.monitoring.gap coldtrace.monitoring.evaluator coldtrace.monitoring.replica coldtrace.monitoring.projection coldtrace.monitoring.outbox coldtrace.bus coldtrace.db
             exclude "coldtrace.monitoring.ingestion -> coldtrace.monitoring.evaluator"
             autoLayout tb 200 150
         }
