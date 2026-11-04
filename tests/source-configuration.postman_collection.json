@@ -23,6 +23,10 @@
     {
       "key": "token",
       "value": ""
+    },
+    {
+      "key": "assetId",
+      "value": ""
     }
   ],
   "item": [
