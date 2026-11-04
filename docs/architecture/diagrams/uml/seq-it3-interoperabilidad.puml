@@ -1,0 +1,41 @@
+@startuml seq-it3-interoperabilidad
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam ParticipantBackgroundColor #438dd5
+skinparam ParticipantFontColor white
+skinparam ParticipantBorderColor #2e6295
+skinparam ActorBackgroundColor #08427b
+skinparam ActorBorderColor #08427b
+skinparam DatabaseBackgroundColor #438dd5
+skinparam DatabaseFontColor black
+skinparam QueueBackgroundColor #438dd5
+skinparam QueueFontColor black
+skinparam SequenceLifeLineBorderColor #888888
+skinparam NoteBackgroundColor #fff8c4
+skinparam NoteBorderColor #c9b200
+skinparam ArrowColor #333333
+
+title Iteración 3 - Incorporación de una fuente compatible
+participant "Fuente MQTT /\nHTTP" as F #999999
+participant "Adaptador\nde entrada" as I #2e7d32
+participant "Perfiles y\nnormalización" as N #2e7d32
+participant "Buffer / emisor\ndurable" as E #2e7d32
+participant "API Gateway /\nMonitoring" as M
+F -> I : payload JSON\ny sourceId
+I -> N : resolver perfil\ny validar versión
+alt Entrada incompatible
+ N --> I : error de perfil,\nunidad o fecha
+ I --> F : rechazo sin\nalmacenar lectura
+else Entrada compatible
+ N -> N : convertir a °C, %RH y UTC\nconservar fuente, dispositivo y versión
+ N -> E : guardar lectura y\nsecuencia en SQLite
+ note over E : Reutiliza el buffer de la Iteración 1
+ E -> M : lote canónico v1\ny clave idempotente
+ M -> M : validar contrato\ny contexto
+ ref over E,M : Evaluación, Outbox y consumidores (Figura 21b)
+ M --> E : accepted / duplicated
+ E -> E : eliminar solo el\nlote confirmado
+end
+@enduml

@@ -2,8 +2,8 @@
 
 - **Estado:** Aceptado
 - **Fecha:** 2026-10-09
-- **Iteración ADD:** Iteración 3 (Usabilidad)
-- **Trazabilidad:** DD-17 (DC-21) · Drivers: QA-03, US08
+- **Ámbito:** Atención funcional de alertas, Sprint 1
+- **Trazabilidad:** US08
 
 ## Contexto
 El usuario necesita confirmación en < 2 s y el equipo debe ver el cambio sin recargar.
