@@ -294,3 +294,22 @@ El build de integración se lanzó en sesión 36298 y registra su salida en
 Downloads/veltis-report/extraction-compose-build.log. Confirmar el resultado
 antes de iniciar los servicios. Siguen por verificar migración de datos,
 recorrido de navegador y Edge, y convergencia del informe y diagramas.
+
+Docker Desktop recovered and the isolated Compose project initialized seven
+schemas. The ct_asset account sees its own schema and MySQL rejects USE
+ct_identity with error 1044. The initial multi-image build/up is live in
+session 38280. The Web image build is live in session 95335. Both were started
+before subsequent edits. Rebuild Identity, Report and Web from the final
+working copies before treating that running stack as the integrated result.
+
+Follow-up published: Identity 0c98a3c (four tests), Report ab8703f (seven
+tests, scoped typed report jobs), Web 5cd186c (37 tests, waits for a report
+job), Infrastructure e2fdd07 (Web profile and gateway smoke test). The
+PowerShell verifier takes -GatewayUrl http://127.0.0.1:28080. Run it only once
+the applications and Pub/Sub bootstrap are available. It uses disposable
+organizations and exercises tenant scope, provisioning, normal telemetry,
+deduplication, UI history and the report projection. The report documentation
+update 6b20997 is published in coldtrace-report, feature/architecture-continuity.
+It records the verified Identity/Asset/Subscription slice while preserving the
+original pagination. Incorporate ADR-0018 and complete runtime evidence after
+the final integration, including the model/figures and historical-data checks.
