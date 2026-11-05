@@ -39,7 +39,7 @@ Los atributos priorizados son disponibilidad, rendimiento e interoperabilidad. E
 
 | Capa | Tecnolog√≠a (no cambiar sin ADR) |
 |---|---|
-| Microservicios | Java 21, Spring Boot 3.3.x y Maven. Separaci√≥n de dominio, aplicaci√≥n y adaptadores donde existen reglas e integraciones variables |
+| Microservicios | Maven por servicio. Monitoring, Alert y Report conservan Java 21 y Spring Boot 3; Identity, Asset, Subscription, Maintenance y AI Assistance reutilizan Java 26 y Spring Boot 4.0.6 del backend. Separaci√≥n de dominio, aplicaci√≥n y adaptadores donde existen reglas e integraciones variables (ADR-0017) |
 | API Gateway | Spring Cloud Gateway con rutas, filtros y configuraci√≥n; sin un dominio artificial |
 | Persistencia | MySQL 8 (Cloud SQL), Spring Data JPA, **Flyway** por servicio |
 | Mensajer√≠a | Google Cloud Pub/Sub (`spring-cloud-gcp-starter-pubsub`), emulador en local |
@@ -60,13 +60,13 @@ Los atributos priorizados son disponibilidad, rendimiento e interoperabilidad. E
 | asset-service | Asset Management | `coldtrace-asset-service` | 8082 | `ct_asset` | 3 |
 | identity-service | Identity & Access | `coldtrace-identity-service` | 8081 | `ct_identity` | 4 |
 | report-service | Reports & Compliance | `coldtrace-report-service` | 8085 | `ct_report` | 5 |
-| ai-assistance-service | AI Assistance | `coldtrace-ai-assistance-service` | 8087 | `ct_ai` | 6 |
+| ai-assistance-service | AI Assistance | `coldtrace-ai-assistance-service` | 8087 | ó | 6 |
 | maintenance-service | Maintenance Management | `coldtrace-maintenance-service` | 8086 | `ct_maintenance` | 7 |
 | subscription-service | Subscription & Billing | `coldtrace-subscription-service` | 8088 | `ct_subscription` | 8 |
 | edge-gateway-agent | ‚Äî (cliente) | `coldtrace-edge-gateway` | ‚Äî | SQLite local | con monitoring |
 
-- Paquete base: `com.iceq.coldtrace.<contexto>` (ver `OPEN_QUESTIONS.md` Q-01).
-- Mientras un contexto no se extrae, el API Gateway enruta su ruta al **backend de referencia** (`coldtrace-backend`).
+- Paquete base: `com.acme.coldtrace.platform.<contexto>` en los contextos reutilizados; `com.acme.coldtrace` en los servicios previamente extra√≠dos. Se conserva el paquete de cada implementaci√≥n.
+- La migraciÛn Strangler Fig utilizÛ el backend de referencia durante los primeros incrementos. La rama de integraciÛn de la extracciÛn define destinos explÌcitos y reserva el backend como fuente histÛrica.
 - Emulador Pub/Sub en local: puerto **8681** (no usar 8085, lo ocupa report-service).
 
 ### Rutas del API Gateway
