@@ -31,6 +31,8 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             identity = container "identity-service" "Usuarios, roles, organizaciones y sesiones (JWT)." "Java, Spring Boot"
             asset = container "asset-service" "Activos, rangos seguros, gateways y dispositivos." "Java, Spring Boot"
             monitoring = container "monitoring-service" "Ingesta de telemetría, evaluación de rango seguro y estado actual del activo." "Java, Spring Boot" {
+                sourceConsumer = component "Source Configuration Consumer" "Procesa revisiones consecutivas y deduplica eventos de asociación por dispositivo." "Application Service"
+                sourceHistory = component "Source Assignment History" "Conserva revisiones y valida fuente y perfil efectivos en el momento de captura." "Domain Repository"
                 validator = component "Canonical Contract Validator" "Valida versión, identidad, unidades canónicas y contexto antes de evaluar y persistir." "Application Service"
                 ingestion = component "Telemetry Ingestion" "Recibe lotes, valida la clave del dispositivo e inserta de forma idempotente." "Spring MVC Controller"
                 gap = component "Source Gap Detector" "Cada 10 s detecta fuentes sin heartbeat ni lecturas y marca el activo como 'sin datos'." "Spring @Scheduled"
@@ -51,7 +53,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             aiService = container "ai-assistance-service" "Planes de resolución asistidos por IA con aprobación humana." "Java, Spring Boot, Spring AI"
             subscription = container "subscription-service" "Planes, suscripciones y webhooks de facturación." "Java, Spring Boot"
 
-            bus = container "Event Bus" "Tópicos threshold.breached, source.gap, readings.ingested, asset.settings-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
+            bus = container "Event Bus" "Tópicos threshold.breached, source.gap, readings.ingested, asset.settings-changed, source.configuration-changed, incident.opened." "Google Cloud Pub/Sub" "Bus"
             db = container "Cloud SQL" "Un esquema por microservicio; ningún servicio accede a tablas de otro." "MySQL 8" "Database"
         }
 
@@ -79,7 +81,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
 
         coldtrace.gateway -> coldtrace.identity "Enruta /authentication, /users" "REST/JSON"
         coldtrace.gateway -> coldtrace.asset "Enruta /assets, /devices" "REST/JSON"
-        coldtrace.gateway -> coldtrace.monitoring "Enruta /telemetry, /assets/{id}/state" "REST/JSON"
+        coldtrace.gateway -> coldtrace.monitoring "Enruta telemetría y estado" "REST/JSON"
         coldtrace.gateway -> coldtrace.alert "Enruta /alerts, /incidents" "REST/JSON"
         coldtrace.gateway -> coldtrace.report "Enruta /reports" "REST/JSON"
         coldtrace.gateway -> coldtrace.maintenance "Enruta /maintenance" "REST/JSON"
@@ -92,10 +94,10 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
 
         # Iteración 2: mensajería asíncrona
         rMonBus = coldtrace.monitoring -> coldtrace.bus "Publica threshold.breached, source.gap, readings.ingested" "Pub/Sub"
-        rAssetBus = coldtrace.asset -> coldtrace.bus "Publica asset.settings-changed" "Pub/Sub"
+        rAssetBus = coldtrace.asset -> coldtrace.bus "Publica cambios de rangos y fuentes" "Pub/Sub"
         rBusAlert = coldtrace.bus -> coldtrace.alert "Entrega threshold.breached, source.gap" "Push autenticado"
         rBusReport = coldtrace.bus -> coldtrace.report "Entrega readings.ingested" "Push autenticado"
-        rBusMon = coldtrace.bus -> coldtrace.monitoring "Entrega asset.settings-changed" "Push autenticado"
+        rBusMon = coldtrace.bus -> coldtrace.monitoring "Entrega cambios de rangos y fuentes" "Push autenticado"
 
         coldtrace.identity -> coldtrace.db "Lee/escribe esquema identity" "JDBC"
         coldtrace.asset -> coldtrace.db "Lee/escribe esquema asset" "JDBC"
@@ -149,10 +151,14 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.edge.pipeline -> coldtrace.edge.buffer "Guarda lectura canónica y secuencia"
         coldtrace.edge.sender -> coldtrace.edge.buffer "Obtiene lote estable y confirma entrega"
         coldtrace.edge.sender -> coldtrace.gateway "Envía lote v1 y heartbeat" "HTTPS + Idempotency-Key"
-        coldtrace.edge.profiles -> coldtrace.asset "Obtiene configuración versionada vía API Gateway" "REST/JSON"
+        coldtrace.asset -> coldtrace.edge.profiles "Exporta perfiles versionados para recarga local" "Archivo JSON administrado"
         coldtrace.monitoring.ingestion -> coldtrace.monitoring.validator "Valida contrato canónico v1"
         coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
 
+        coldtrace.bus -> coldtrace.monitoring.sourceConsumer "source.configuration-changed" "Pub/Sub"
+        coldtrace.monitoring.sourceConsumer -> coldtrace.monitoring.sourceHistory "Aplica revisiones en orden"
+        coldtrace.monitoring.ingestion -> coldtrace.monitoring.sourceHistory "Verifica asociación efectiva"
+        coldtrace.monitoring.sourceHistory -> coldtrace.db "Consulta revisiones locales" "JDBC"
         # --- Despliegue ---
         prod = deploymentEnvironment "Producción" {
             deploymentNode "Dispositivo del usuario" "Escritorio o móvil" "Navegador web" {
@@ -242,7 +248,7 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         }
 
         component coldtrace.monitoring "It3_Componentes_Monitoring" "Iteración 3 (Interoperabilidad) - La validación canónica precede a la evaluación; se conservan réplica, proyección, detección de brechas y Outbox." {
-            include coldtrace.edge coldtrace.web coldtrace.monitoring.ingestion coldtrace.monitoring.validator coldtrace.monitoring.gap coldtrace.monitoring.evaluator coldtrace.monitoring.replica coldtrace.monitoring.projection coldtrace.monitoring.outbox coldtrace.bus coldtrace.db
+            include coldtrace.monitoring.sourceConsumer coldtrace.monitoring.sourceHistory coldtrace.edge coldtrace.web coldtrace.monitoring.ingestion coldtrace.monitoring.validator coldtrace.monitoring.gap coldtrace.monitoring.evaluator coldtrace.monitoring.replica coldtrace.monitoring.projection coldtrace.monitoring.outbox coldtrace.bus coldtrace.db
             exclude "coldtrace.monitoring.ingestion -> coldtrace.monitoring.evaluator"
             autoLayout tb 200 150
         }

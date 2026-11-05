@@ -1,0 +1,169 @@
+{
+  "iam": {
+    "javaFiles": 145,
+    "crossContextImports": {
+      "iam\\application\\commandservices\\UserCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "iam\\application\\internal\\commandservices\\OrganizationCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "iam\\application\\internal\\commandservices\\OrganizationSignUpCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "iam\\application\\internal\\commandservices\\SocialOrganizationSignUpCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "iam\\application\\internal\\commandservices\\UserCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "iam\\interfaces\\rest\\transform\\ResponseEntityFromUserCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ]
+    }
+  },
+  "assetmanagement": {
+    "javaFiles": 151,
+    "crossContextImports": {
+      "assetmanagement\\application\\commandservices\\AssetCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "assetmanagement\\application\\commandservices\\IoTDeviceCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "assetmanagement\\application\\commandservices\\LocationCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "assetmanagement\\application\\internal\\commandservices\\AssetCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository"
+      ],
+      "assetmanagement\\application\\internal\\commandservices\\AssetSettingsCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository"
+      ],
+      "assetmanagement\\application\\internal\\commandservices\\GatewayCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository"
+      ],
+      "assetmanagement\\application\\internal\\commandservices\\IoTDeviceCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository"
+      ],
+      "assetmanagement\\application\\internal\\commandservices\\LocationCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository"
+      ],
+      "assetmanagement\\interfaces\\rest\\SourceConfigurationsController.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.SessionContextFacade"
+      ],
+      "assetmanagement\\interfaces\\rest\\transform\\ResponseEntityFromAssetCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ],
+      "assetmanagement\\interfaces\\rest\\transform\\ResponseEntityFromIoTDeviceCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ],
+      "assetmanagement\\interfaces\\rest\\transform\\ResponseEntityFromLocationCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ]
+    }
+  },
+  "billing": {
+    "javaFiles": 107,
+    "crossContextImports": {
+      "billing\\application\\internal\\commandservices\\BillingCheckoutSessionCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "billing\\application\\internal\\commandservices\\BillingPortalSessionCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "billing\\application\\internal\\commandservices\\OrganizationSubscriptionCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "billing\\application\\internal\\queryservices\\OrganizationSubscriptionQueryServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "billing\\application\\internal\\services\\OrganizationSubscriptionUsageService.java": [
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade",
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ]
+    }
+  },
+  "maintenancemanagement": {
+    "javaFiles": 59,
+    "crossContextImports": {
+      "maintenancemanagement\\application\\commandservices\\MaintenanceScheduleCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "maintenancemanagement\\application\\commandservices\\TechnicalServiceRequestCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "maintenancemanagement\\application\\internal\\commandservices\\MaintenanceScheduleCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "maintenancemanagement\\application\\internal\\commandservices\\TechnicalServiceRequestCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.alerts.interfaces.acl.AlertsContextFacade",
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "maintenancemanagement\\application\\internal\\queryservices\\MaintenanceScheduleQueryServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "maintenancemanagement\\application\\internal\\queryservices\\TechnicalServiceRequestQueryServiceImpl.java": [
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade"
+      ],
+      "maintenancemanagement\\domain\\model\\aggregates\\TechnicalServiceRequest.java": [
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade.AssetSnapshot"
+      ],
+      "maintenancemanagement\\interfaces\\rest\\transform\\ResponseEntityFromMaintenanceScheduleCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ],
+      "maintenancemanagement\\interfaces\\rest\\transform\\ResponseEntityFromTechnicalServiceRequestCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ]
+    }
+  },
+  "aiassistance": {
+    "javaFiles": 33,
+    "crossContextImports": {
+      "aiassistance\\application\\commandservices\\DashboardAiInterpretationCommandFailure.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade"
+      ],
+      "aiassistance\\application\\internal\\commandservices\\DashboardAiInterpretationCommandServiceImpl.java": [
+        "com.acme.coldtrace.platform.alerts.interfaces.acl.AlertsContextFacade",
+        "com.acme.coldtrace.platform.alerts.interfaces.acl.AlertsContextFacade.IncidentSnapshot",
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade",
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade.AssetSnapshot",
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade.GatewaySnapshot",
+        "com.acme.coldtrace.platform.assetmanagement.interfaces.acl.AssetManagementContextFacade.IoTDeviceSnapshot",
+        "com.acme.coldtrace.platform.iam.interfaces.acl.IamContextFacade",
+        "com.acme.coldtrace.platform.maintenancemanagement.interfaces.acl.MaintenanceManagementContextFacade",
+        "com.acme.coldtrace.platform.maintenancemanagement.interfaces.acl.MaintenanceManagementContextFacade.MaintenanceScheduleSnapshot",
+        "com.acme.coldtrace.platform.maintenancemanagement.interfaces.acl.MaintenanceManagementContextFacade.TechnicalServiceRequestSnapshot",
+        "com.acme.coldtrace.platform.monitoring.interfaces.acl.MonitoringContextFacade",
+        "com.acme.coldtrace.platform.monitoring.interfaces.acl.MonitoringContextFacade.SensorReadingSnapshot",
+        "com.acme.coldtrace.platform.reports.domain.model.aggregates.Report",
+        "com.acme.coldtrace.platform.reports.domain.repositories.ReportRepository"
+      ],
+      "aiassistance\\interfaces\\rest\\transform\\ResponseEntityFromDashboardAiInterpretationCommandResultAssembler.java": [
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementFailure",
+        "com.acme.coldtrace.platform.billing.interfaces.acl.PlanEntitlementProblemProperties"
+      ]
+    }
+  }
+}
