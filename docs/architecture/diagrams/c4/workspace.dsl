@@ -159,6 +159,8 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
 
         # --- Iteración 4: atención y consulta sobre los servicios existentes ---
+        gustavo -> coldtrace.web.inbox "Consulta y atiende incidencias" "HTTPS"
+        sofia -> coldtrace.web.inbox "Supervisa y revisa el historial" "HTTPS"
         coldtrace.web.inbox -> coldtrace.web.detail "Abre el contexto de la incidencia"
         coldtrace.web.inbox -> coldtrace.web.history "Abre el historial"
         coldtrace.web.detail -> coldtrace.web.session "Solicita detalle y envía comandos"
@@ -335,3 +337,4 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         }
     }
 }
+
