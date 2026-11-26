@@ -87,7 +87,8 @@ public class ResponseEntityFromIoTDeviceCommandResultAssembler {
     }
 
     private static HttpStatus statusFromFailure(IoTDeviceCommandFailure failure) {
-        if (failure instanceof IoTDeviceCommandFailure.DuplicateUuid ||
+        if (failure instanceof IoTDeviceCommandFailure.ManagedSourceConfiguration ||
+                failure instanceof IoTDeviceCommandFailure.DuplicateUuid ||
                 failure instanceof IoTDeviceCommandFailure.DeleteBlocked ||
                 failure instanceof IoTDeviceCommandFailure.PlanLimitExceeded) {
             return HttpStatus.CONFLICT;

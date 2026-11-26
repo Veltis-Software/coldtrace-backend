@@ -14,6 +14,7 @@
 | [ADR-0010](ADR-0010-transactional-outbox-y-consumidores-idempotentes.md) | Transactional Outbox y consumidores idempotentes | Iteración 2 (Rendimiento) | DD-11 (DC-13) |
 | [ADR-0011](ADR-0011-replica-local-de-rangos-y-proyeccion-del-estado-actual.md) | Réplica local de rangos y proyección del estado actual | Iteración 2 (Rendimiento) | DD-12 (DC-14, DC-15) |
 | [ADR-0012](ADR-0012-modelo-de-lectura-historico-en-report-service.md) | Modelo de lectura histórico en report-service | Iteración 2 (Rendimiento) | DD-13 (DC-16) |
-| [ADR-0013](ADR-0013-deep-link-y-endpoint-de-detalle-de-alerta.md) | Deep link y endpoint de detalle de alerta | Iteración 3 (Usabilidad) | DD-14, DD-15 (DC-18, DC-19) |
-| [ADR-0014](ADR-0014-accion-unica-reconocer-y-asignar-con-deshacer.md) | Acción única Reconocer y asignar con deshacer | Iteración 3 (Usabilidad) | DD-16 (DC-20) |
-| [ADR-0015](ADR-0015-confirmacion-sincrona-y-actualizacion-por-server-sent-events.md) | Confirmación síncrona y actualización por Server-Sent Events | Iteración 3 (Usabilidad) | DD-17 (DC-21) |
+| [ADR-0013](ADR-0013-deep-link-y-endpoint-de-detalle-de-alerta.md) | Deep link y endpoint de detalle de alerta | Atención funcional Sprint 1 | US33, AC-03 |
+| [ADR-0014](ADR-0014-accion-unica-reconocer-y-asignar-con-deshacer.md) | Acción única Reconocer y asignar con deshacer | Atención funcional Sprint 1 | US08, US09 |
+| [ADR-0015](ADR-0015-confirmacion-sincrona-y-actualizacion-por-server-sent-events.md) | Confirmación síncrona y actualización por Server-Sent Events | Atención funcional Sprint 1 | US08 |
+| [ADR-0016](ADR-0016-perfiles-y-adaptadores-de-fuentes.md) | Perfiles y adaptadores de fuentes compatibles | Iteración 3 (Interoperabilidad) | DD-14…DD-17; QA-03; US03, US29, US30 |
