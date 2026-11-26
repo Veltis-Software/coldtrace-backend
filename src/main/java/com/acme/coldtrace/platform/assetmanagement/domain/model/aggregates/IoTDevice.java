@@ -150,6 +150,12 @@ public class IoTDevice extends AbstractDomainAggregateRoot<IoTDevice> {
         return this.uuid.value();
     }
 
+    /** Assigns an asset through the versioned source configuration use case. */
+    public void associateSourceAsset(Long assetId) {
+        if (assetId == null || assetId <= 0) throw new IllegalArgumentException("Invalid asset");
+        this.assetId = assetId;
+    }
+
     /**
      * Returns the strongly typed device uuid value object.
      *

@@ -2,8 +2,8 @@
 
 - **Estado:** Aceptado
 - **Fecha:** 2026-10-09
-- **Iteración ADD:** Iteración 3 (Usabilidad)
-- **Trazabilidad:** DD-14, DD-15 (DC-18, DC-19) · Drivers: QA-03, US33, AC-03
+- **Ámbito:** Atención funcional de alertas, Sprint 1
+- **Trazabilidad:** US33 y AC-03
 
 ## Contexto
 El encargado sin perfil técnico debe llegar a la alerta y entender su contexto sin navegar.

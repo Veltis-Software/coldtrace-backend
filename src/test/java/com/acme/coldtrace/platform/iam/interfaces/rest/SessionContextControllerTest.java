@@ -19,15 +19,16 @@ class SessionContextControllerTest {
     when(user.getOrganizationId()).thenReturn(7L);
     when(users.findByEmail("member@example.test")).thenReturn(Optional.of(user));
     var result =
-        new SessionContextController(users)
+        new SessionContextController(users, mock(com.acme.coldtrace.platform.iam.domain.repositories.RoleRepository.class))
             .context(new UsernamePasswordAuthenticationToken("member@example.test", "unused"));
-    assertThat(result).isEqualTo(new SessionContextController.SessionContext(10L, 7L));
+    assertThat(result.userId()).isEqualTo(10L);
+    assertThat(result.organizationId()).isEqualTo(7L);
   }
 
   @Test
   void rejectsMissingOrUnknownUsers() {
     var users = mock(UserRepository.class);
-    var controller = new SessionContextController(users);
+    var controller = new SessionContextController(users, mock(com.acme.coldtrace.platform.iam.domain.repositories.RoleRepository.class));
     assertThatThrownBy(() -> controller.context(null)).isInstanceOf(ResponseStatusException.class);
     when(users.findByEmail("missing@example.test")).thenReturn(Optional.empty());
     assertThatThrownBy(

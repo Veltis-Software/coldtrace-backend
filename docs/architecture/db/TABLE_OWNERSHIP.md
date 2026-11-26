@@ -8,9 +8,9 @@ Cada tabla tiene **un Ãºnico servicio propietario**. Solo el propietario lee y e
 | `ct_identity` | identity-service | organizations, users, roles, role_permissions, external_identities | â€” |
 | `ct_asset` | asset-service | locations, assets, asset_settings, asset_settings_asset_types, asset_settings_iot_device_types, gateways, iot_devices, iot_device_measurement_parameters | `gateways.api_key_hash`; `asset_settings.settings_version`; `outbox_events` |
 | `ct_monitoring` | monitoring-service | sensor_readings | UK `(iot_device_id, recorded_at, sequence_number)` y columna `sequence_number`; `monitored_gateways` (copia de heartbeat); `safe_range_replica`; `device_replica`; `asset_current_state`; `outbox_events` |
-| `ct_alert` | alert-service | incidents, notifications | `incidents.assigned_to_user_id`, `incidents.assigned_at`; `processed_events`; `outbox_events` |
+| `ct_alert` | alert-service | incidents, notifications, incident_ai_resolution_plans y sus colecciones de pasos, evidencia e incertidumbre | `incidents.assigned_to_user_id`, `incidents.assigned_at`; `processed_events`; `outbox_events` |
 | `ct_report` | report-service | reports | `reading_aggregates`; `processed_events` |
-| `ct_ai` | ai-assistance-service | incident_ai_resolution_plans, ai_report_summaries | `processed_events` |
+| — | ai-assistance-service | Sin persistencia operativa; generación estructurada y composición de evidencia | — |
 | `ct_maintenance` | maintenance-service | maintenance_schedules, technical_service_requests | â€” |
 | `ct_subscription` | subscription-service | subscription_plans, organization_subscriptions, billing_webhook_events | â€” |
 

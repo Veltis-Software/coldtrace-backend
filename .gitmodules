@@ -1,7 +1,3 @@
-[submodule "sprint1/coldtrace-shared"]
-	path = sprint1/coldtrace-shared
-	url = https://github.com/Veltis-Software/coldtrace-shared.git
-	branch = develop
 [submodule "sprint1/coldtrace-monitoring-service"]
 	path = sprint1/coldtrace-monitoring-service
 	url = https://github.com/Veltis-Software/coldtrace-monitoring-service.git
@@ -22,3 +18,6 @@
 	path = sprint1/coldtrace-infrastructure
 	url = https://github.com/Veltis-Software/coldtrace-infrastructure.git
 	branch = develop
+[submodule "sprint1/coldtrace-report-service"]
+	path = sprint1/coldtrace-report-service
+	url = https://github.com/Veltis-Software/coldtrace-report-service.git

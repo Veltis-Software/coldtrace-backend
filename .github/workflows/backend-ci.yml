@@ -5,10 +5,12 @@ on:
     branches:
       - develop
       - main
+      - docs/architecture-interoperability
   push:
     branches:
       - develop
       - main
+      - feature/source-configuration
   workflow_dispatch:
 
 permissions:

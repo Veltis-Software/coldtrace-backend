@@ -12,9 +12,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class SessionContextController {
   private final UserRepository users;
+  private final com.acme.coldtrace.platform.iam.domain.repositories.RoleRepository roles;
 
-  public SessionContextController(UserRepository users) {
+  public SessionContextController(UserRepository users, com.acme.coldtrace.platform.iam.domain.repositories.RoleRepository roles) {
     this.users = users;
+    this.roles = roles;
   }
 
   @Operation(summary = "Resolve the authenticated organization during service migration")
@@ -25,8 +27,11 @@ public class SessionContextController {
         users
             .findByEmail(authentication.getName())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    return new SessionContext(user.getId(), user.getOrganizationId());
+    var permissions = roles.findById(user.getRoleId()).map(role -> role.getPermissions().stream()
+        .map(permission -> permission.getResource() + ":" + permission.getAction()).toList()).orElse(java.util.List.of());
+    return new SessionContext(user.getId(), user.getOrganizationId(),
+        user.getFirstName() + " " + user.getLastName(), permissions);
   }
 
-  public record SessionContext(Long userId, Long organizationId) {}
+  public record SessionContext(Long userId, Long organizationId, String fullName, java.util.List<String> permissions) {}
 }
