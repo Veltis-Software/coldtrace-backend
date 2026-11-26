@@ -1,0 +1,120 @@
+{
+  "scope": "Pre-merge validated implementation commits; CI artifacts are available on the linked runs",
+  "results": [
+    {
+      "repository": "coldtrace-services",
+      "validatedCommit": "83b02fef37175b98d57bfacad5ed323764c8cb55",
+      "pr": "https://github.com/Veltis-Software/coldtrace-services/pull/2",
+      "checks": [
+        {
+          "workflow": "Backend CI",
+          "name": "Test and package",
+          "url": "https://github.com/Veltis-Software/coldtrace-services/actions/runs/38007035586/job/114078094990",
+          "completedAt": "2026-10-10T00:01:04Z"
+        },
+        {
+          "workflow": "Sprint 1 validation",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-services/actions/runs/38007035725/job/114078108198",
+          "completedAt": "2026-10-10T00:00:39Z"
+        },
+        {
+          "workflow": "Sprint 1 validation",
+          "name": "container (coldtrace-monitoring-service)",
+          "url": "https://github.com/Veltis-Software/coldtrace-services/actions/runs/38007035725/job/114078107785",
+          "completedAt": "2026-10-10T00:00:19Z"
+        },
+        {
+          "workflow": "Sprint 1 validation",
+          "name": "container (coldtrace-alert-service)",
+          "url": "https://github.com/Veltis-Software/coldtrace-services/actions/runs/38007035725/job/114078107628",
+          "completedAt": "2026-10-10T00:00:03Z"
+        },
+        {
+          "workflow": "Sprint 1 validation",
+          "name": "container (coldtrace-api-gateway)",
+          "url": "https://github.com/Veltis-Software/coldtrace-services/actions/runs/38007035725/job/114078107784",
+          "completedAt": "2026-10-10T00:00:17Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-shared",
+      "validatedCommit": "1fb063352e7d92feff46f92ae56cccf766734dcd",
+      "pr": "https://github.com/Veltis-Software/coldtrace-shared/pull/2",
+      "checks": [
+        {
+          "workflow": "Shared library verification",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-shared/actions/runs/38007049136/job/114078138447",
+          "completedAt": "2026-10-10T00:00:47Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-monitoring-service",
+      "validatedCommit": "a503b8b413f2181220985258eaf5e96b068ee816",
+      "pr": "https://github.com/Veltis-Software/coldtrace-monitoring-service/pull/2",
+      "checks": [
+        {
+          "workflow": "Verify independent service",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-monitoring-service/actions/runs/38007061793/job/114078179618",
+          "completedAt": "2026-10-10T00:01:36Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-alert-service",
+      "validatedCommit": "e23586f6d09409f51ad34874febcaee4baceef59",
+      "pr": "https://github.com/Veltis-Software/coldtrace-alert-service/pull/2",
+      "checks": [
+        {
+          "workflow": "Verify independent service",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-alert-service/actions/runs/38007073849/job/114078219575",
+          "completedAt": "2026-10-10T00:01:59Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-api-gateway",
+      "validatedCommit": "9898de002fd26c7edbf0803e271845cf0fec0da5",
+      "pr": "https://github.com/Veltis-Software/coldtrace-api-gateway/pull/2",
+      "checks": [
+        {
+          "workflow": "Verify independent service",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-api-gateway/actions/runs/38007088853/job/114078263185",
+          "completedAt": "2026-10-10T00:01:58Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-edge-gateway",
+      "validatedCommit": "6f3e2733b7142b839d2d2e2be50f45c9cea2fb9d",
+      "pr": "https://github.com/Veltis-Software/coldtrace-edge-gateway/pull/2",
+      "checks": [
+        {
+          "workflow": "Verify edge",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-edge-gateway/actions/runs/38007104404/job/114078310969",
+          "completedAt": "2026-10-10T00:01:01Z"
+        }
+      ]
+    },
+    {
+      "repository": "coldtrace-infrastructure",
+      "validatedCommit": "42edff81ea2177e484d943232f03f6fce53fd46d",
+      "pr": "https://github.com/Veltis-Software/coldtrace-infrastructure/pull/2",
+      "checks": [
+        {
+          "workflow": "Validate orchestration",
+          "name": "verify",
+          "url": "https://github.com/Veltis-Software/coldtrace-infrastructure/actions/runs/38007122167/job/114078365077",
+          "completedAt": "2026-10-10T00:01:10Z"
+        }
+      ]
+    }
+  ]
+}

@@ -34,13 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(
-        value = {
-                "/organizations/{organizationId}/dashboard",
-                "/api/v1/organizations/{organizationId}/dashboard"
-        },
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/dashboard", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "AI Assistance", description = "Endpoints for structured AI-assisted operational guidance")
 public class DashboardAiInterpretationController {
     private final DashboardAiInterpretationCommandService dashboardAiInterpretationCommandService;

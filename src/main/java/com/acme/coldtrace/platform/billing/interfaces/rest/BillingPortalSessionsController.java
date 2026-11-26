@@ -29,13 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(
-        value = {
-                "/organizations/{organizationId}/billing/portal-sessions",
-                "/api/v1/organizations/{organizationId}/billing/portal-sessions"
-        },
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/billing/portal-sessions", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Billing Customer Portal Sessions", description = "Endpoints for provider-hosted billing management")
 public class BillingPortalSessionsController {
     private final BillingPortalSessionCommandService billingPortalSessionCommandService;

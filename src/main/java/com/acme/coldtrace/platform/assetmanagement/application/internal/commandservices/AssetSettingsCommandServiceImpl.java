@@ -28,15 +28,18 @@ public class AssetSettingsCommandServiceImpl implements AssetSettingsCommandServ
     private final AssetSettingsRepository assetSettingsRepository;
     private final AssetRepository assetRepository;
     private final OrganizationRepository organizationRepository;
+    private final com.acme.coldtrace.platform.assetmanagement.application.commandservices.AssetSettingsEvents events;
 
     public AssetSettingsCommandServiceImpl(
             AssetSettingsRepository assetSettingsRepository,
             AssetRepository assetRepository,
-            OrganizationRepository organizationRepository
+            OrganizationRepository organizationRepository,
+            com.acme.coldtrace.platform.assetmanagement.application.commandservices.AssetSettingsEvents events
     ) {
         this.assetSettingsRepository = assetSettingsRepository;
         this.assetRepository = assetRepository;
         this.organizationRepository = organizationRepository;
+        this.events = events;
     }
 
     /**
@@ -68,6 +71,7 @@ public class AssetSettingsCommandServiceImpl implements AssetSettingsCommandServ
             settings.update(command);
         }
         var savedSettings = assetSettingsRepository.save(settings);
+        events.changed(savedSettings);
         log.info("Asset settings saved: id={}, organizationId={}, assetId={}",
                 savedSettings.getId(), savedSettings.getOrganizationId(), savedSettings.getAssetId());
         return Result.success(savedSettings);

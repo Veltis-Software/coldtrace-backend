@@ -1,6 +1,7 @@
 package com.acme.coldtrace.platform.assetmanagement.interfaces.rest;
 
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.IoTDeviceCommandService;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteIoTDeviceCommand;
 import com.acme.coldtrace.platform.assetmanagement.application.queryservices.IoTDeviceQueryService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetIoTDeviceByIdAndOrganizationIdQuery;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetIoTDevicesByOrganizationIdQuery;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +47,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/iot-devices", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/iot-devices", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "IoT Devices", description = "Endpoints for IoT devices connected to gateways")
 public class IoTDevicesController {
     private final IoTDeviceCommandService iotDeviceCommandService;
@@ -201,6 +203,38 @@ public class IoTDevicesController {
         var device = iotDeviceCommandService.handle(command);
         return ResponseEntityFromIoTDeviceCommandResultAssembler.toResponseEntityFromUpdateResult(
                 device,
+                messageSource
+        );
+    }
+
+    /**
+     * Deletes an IoT device.
+     *
+     * @param organizationId organization identifier
+     * @param iotDeviceId IoT device identifier
+     * @return empty response on success or failure detail
+     */
+    @Operation(summary = "Delete an IoT device",
+            description = "Deletes one IoT device that belongs to the provided organization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "IoT device deleted", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Missing or invalid identifier",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Organization or IoT device not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "IoT device cannot be deleted because related data exists",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{iotDeviceId}")
+    public ResponseEntity<?> deleteIoTDevice(
+            @Parameter(name = "organizationId", description = "Organization identifier", required = true)
+            @PathVariable Long organizationId,
+            @Parameter(name = "iotDeviceId", description = "IoT device identifier", required = true)
+            @PathVariable Long iotDeviceId) {
+        log.debug("DELETE /organizations/{}/iot-devices/{}", organizationId, iotDeviceId);
+        var result = iotDeviceCommandService.handle(new DeleteIoTDeviceCommand(organizationId, iotDeviceId));
+        return ResponseEntityFromIoTDeviceCommandResultAssembler.toResponseEntityFromDeleteResult(
+                result,
                 messageSource
         );
     }

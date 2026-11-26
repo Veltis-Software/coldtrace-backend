@@ -42,6 +42,12 @@ public class IoTDeviceRepositoryImpl implements IoTDeviceRepository {
                 .map(IoTDevicePersistenceAssembler::toDomainFromPersistence);
     }
 
+    @Override
+    public Optional<IoTDevice> lockByIdAndOrganizationId(Long id, Long organizationId) {
+        return iotDevicePersistenceRepository.lockByIdAndOrganizationId(id, organizationId)
+                .map(IoTDevicePersistenceAssembler::toDomainFromPersistence);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -81,5 +87,14 @@ public class IoTDeviceRepositoryImpl implements IoTDeviceRepository {
                 new IoTDeviceUuid(uuid),
                 id
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteById(Long id) {
+        iotDevicePersistenceRepository.deleteById(id);
+        iotDevicePersistenceRepository.flush();
     }
 }

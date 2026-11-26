@@ -79,4 +79,13 @@ public class LocationRepositoryImpl implements LocationRepository {
                 id
         );
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteById(Long id) {
+        locationPersistenceRepository.deleteById(id);
+        locationPersistenceRepository.flush();
+    }
 }

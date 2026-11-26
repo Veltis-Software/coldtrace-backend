@@ -1,0 +1,8 @@
+{
+  "environment": "local MySQL 8.0 and Pub/Sub emulator",
+  "observedOn": "2026-10-09",
+  "eventId": "0763206b-d13f-4742-9b49-9bb9a28fd9f8",
+  "brokerStoppedIngestionStatus": 202,
+  "whileUnavailable": {"publishedAt": null, "attemptsObserved": 16},
+  "note": "The emulator loses topics/subscriptions on restart; rerun pubsub-init before testing recovery. Final database state is recorded in database-checks.txt."
+}

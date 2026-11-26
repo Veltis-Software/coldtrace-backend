@@ -4,6 +4,7 @@ import com.acme.coldtrace.platform.assetmanagement.application.commandservices.A
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.AssetCommandService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.aggregates.Asset;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.CreateAssetCommand;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteAssetCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.UpdateAssetCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.repositories.AssetRepository;
 import com.acme.coldtrace.platform.assetmanagement.domain.repositories.LocationRepository;
@@ -142,6 +143,36 @@ public class AssetCommandServiceImpl implements AssetCommandService {
                 return Result.failure(new AssetCommandFailure.DuplicateUuid());
             }
             throw exception;
+        }
+    }
+
+    /**
+     * Handles deletion of an asset aggregate.
+     *
+     * @param command command containing route-scoped deletion identifiers
+     * @return success with the command or failure with an asset command error
+     * @see DeleteAssetCommand
+     */
+    @Override
+    @Transactional
+    public Result<DeleteAssetCommand, AssetCommandFailure> handle(DeleteAssetCommand command) {
+        if (!organizationRepository.existsById(command.organizationId())) {
+            log.warn("Organization not found for asset deletion: organizationId={}", command.organizationId());
+            return Result.failure(new AssetCommandFailure.OrganizationNotFound());
+        }
+        if (assetRepository.findByIdAndOrganizationId(command.assetId(), command.organizationId()).isEmpty()) {
+            log.warn("Asset not found for deletion: organizationId={}, assetId={}",
+                    command.organizationId(), command.assetId());
+            return Result.failure(new AssetCommandFailure.AssetNotFound());
+        }
+        try {
+            assetRepository.deleteById(command.assetId());
+            log.info("Asset deleted: id={}, organizationId={}", command.assetId(), command.organizationId());
+            return Result.success(command);
+        } catch (DataIntegrityViolationException exception) {
+            log.warn("Asset deletion blocked by related records: organizationId={}, assetId={}",
+                    command.organizationId(), command.assetId());
+            return Result.failure(new AssetCommandFailure.DeleteBlocked());
         }
     }
 

@@ -1,0 +1,8 @@
+{
+  "runtime": "host JDK 26",
+  "suite": "com.acme.coldtrace.platform.iam.interfaces.rest.SessionContextControllerTest",
+  "tests": 2,
+  "errors": 0,
+  "failures": 0,
+  "skipped": 0
+}

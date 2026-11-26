@@ -27,7 +27,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/roles", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/roles", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Roles", description = "Endpoints for roles and permissions")
 public class RolesController {
     private final RoleQueryService roleQueryService;

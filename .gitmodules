@@ -1,0 +1,23 @@
+[submodule "sprint1/coldtrace-monitoring-service"]
+	path = sprint1/coldtrace-monitoring-service
+	url = https://github.com/Veltis-Software/coldtrace-monitoring-service.git
+	branch = develop
+[submodule "sprint1/coldtrace-alert-service"]
+	path = sprint1/coldtrace-alert-service
+	url = https://github.com/Veltis-Software/coldtrace-alert-service.git
+	branch = develop
+[submodule "sprint1/coldtrace-api-gateway"]
+	path = sprint1/coldtrace-api-gateway
+	url = https://github.com/Veltis-Software/coldtrace-api-gateway.git
+	branch = develop
+[submodule "sprint1/coldtrace-edge-gateway"]
+	path = sprint1/coldtrace-edge-gateway
+	url = https://github.com/Veltis-Software/coldtrace-edge-gateway.git
+	branch = develop
+[submodule "sprint1/coldtrace-infrastructure"]
+	path = sprint1/coldtrace-infrastructure
+	url = https://github.com/Veltis-Software/coldtrace-infrastructure.git
+	branch = develop
+[submodule "sprint1/coldtrace-report-service"]
+	path = sprint1/coldtrace-report-service
+	url = https://github.com/Veltis-Software/coldtrace-report-service.git

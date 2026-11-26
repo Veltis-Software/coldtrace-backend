@@ -18,6 +18,7 @@ public sealed interface AssetCommandFailure
         AssetCommandFailure.OrganizationNotFound,
         AssetCommandFailure.LocationNotFound,
         AssetCommandFailure.AssetNotFound,
+        AssetCommandFailure.DeleteBlocked,
         AssetCommandFailure.PlanLimitExceeded {
     /**
      * Returns the message key associated with the failure.
@@ -77,6 +78,16 @@ public sealed interface AssetCommandFailure
         @Override
         public String messageKey() {
             return "asset-management.asset.error.asset-not-found";
+        }
+    }
+
+    /**
+     * Failure raised when related records prevent deleting the asset.
+     */
+    record DeleteBlocked() implements AssetCommandFailure {
+        @Override
+        public String messageKey() {
+            return "asset-management.asset.error.delete-blocked";
         }
     }
 

@@ -1,0 +1,108 @@
+{
+  "observedAt": "2026-10-09T23:39:02.897005+00:00",
+  "baseUrl": "http://localhost:18080",
+  "checks": [
+    {
+      "method": "POST",
+      "path": "/api/v1/authentication/sign-in",
+      "status": 200,
+      "correlationId": "2b8c048c-fca3-49c3-9d5a-1b4bd942454a"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/authentication/sign-in",
+      "status": 200,
+      "correlationId": "aba61251-ef21-4b31-b9ce-3ded7f05a41c"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/session/context",
+      "status": 200,
+      "correlationId": "d4fcd8ea-4d3e-4558-9948-9ce9f0fa0671"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telemetry/batches",
+      "status": 202,
+      "correlationId": "tp1-local-smoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telemetry/batches",
+      "status": 202,
+      "correlationId": "tp1-local-smoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telemetry/batches",
+      "status": 202,
+      "correlationId": "tp1-local-smoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telemetry/batches",
+      "status": 401,
+      "correlationId": "tp1-local-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/assets/1/state",
+      "status": 200,
+      "correlationId": "e2fb71de-864f-42cd-954a-0a27a159fcdb"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/assets/1/state",
+      "status": 404,
+      "correlationId": "99137ff3-5c78-4f3b-b3b8-b216aadf86b9"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/assets/1/state",
+      "status": 401,
+      "correlationId": "6400c41e-ee56-4f99-9e82-0217fed76a79"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/assets/states?page=0&size=10",
+      "status": 200,
+      "correlationId": "75b47c2b-6d95-4b3d-b9cb-d66bc957a0d9"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts",
+      "status": 200,
+      "correlationId": "0c52889e-a25d-4956-9e30-9484cfc29bde"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/telemetry/batches",
+      "status": 202,
+      "correlationId": "tp1-local-smoke"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts",
+      "status": 200,
+      "correlationId": "a26137f4-84fa-4817-ac74-4218a19caab9"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts",
+      "status": 200,
+      "correlationId": "fad12f5e-7482-45a7-b707-2207aaabe84d"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts/55",
+      "status": 200,
+      "correlationId": "8801512d-85ef-4087-801f-e45379f7f17d"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/alerts/55",
+      "status": 404,
+      "correlationId": "8904de83-7bc7-44b5-8369-ec5cac10f6da"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "account": "David-std2",
+  "organization": "Veltis-Software",
+  "state": "Implementation PRs merged after successful CI",
+  "workflow": "GitFlow in component repositories: main/develop, feature, release and hotfix",
+  "sharedRevision": "08ab5ee5321e3d7e5e4ec0b3c454a5f5da9bfcc3",
+  "repositories": [
+    {
+      "name": "coldtrace-services",
+      "url": "https://github.com/Veltis-Software/coldtrace-services",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-services/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "main"
+    },
+    {
+      "name": "coldtrace-shared",
+      "url": "https://github.com/Veltis-Software/coldtrace-shared",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-shared/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    },
+    {
+      "name": "coldtrace-monitoring-service",
+      "url": "https://github.com/Veltis-Software/coldtrace-monitoring-service",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-monitoring-service/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    },
+    {
+      "name": "coldtrace-alert-service",
+      "url": "https://github.com/Veltis-Software/coldtrace-alert-service",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-alert-service/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    },
+    {
+      "name": "coldtrace-api-gateway",
+      "url": "https://github.com/Veltis-Software/coldtrace-api-gateway",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-api-gateway/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    },
+    {
+      "name": "coldtrace-edge-gateway",
+      "url": "https://github.com/Veltis-Software/coldtrace-edge-gateway",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-edge-gateway/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    },
+    {
+      "name": "coldtrace-infrastructure",
+      "url": "https://github.com/Veltis-Software/coldtrace-infrastructure",
+      "pullRequest": "https://github.com/Veltis-Software/coldtrace-infrastructure/pull/2",
+      "implementationState": "merged",
+      "activeBranch": "develop"
+    }
+  ]
+}

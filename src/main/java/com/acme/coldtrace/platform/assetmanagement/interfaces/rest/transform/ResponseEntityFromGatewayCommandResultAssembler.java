@@ -54,6 +54,23 @@ public class ResponseEntityFromGatewayCommandResultAssembler {
         );
     }
 
+    /**
+     * Converts a gateway deletion result into an HTTP response.
+     *
+     * @param result gateway deletion command result
+     * @param messageSource message source for localized failure details
+     * @return 204 response on success or error response on failure
+     */
+    public static ResponseEntity<?> toResponseEntityFromDeleteResult(
+            Result<?, GatewayCommandFailure> result,
+            MessageSource messageSource
+    ) {
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                failure -> toFailureResponse(failure, messageSource)
+        );
+    }
+
     private static ResponseEntity<?> toFailureResponse(
             GatewayCommandFailure failure,
             MessageSource messageSource
@@ -66,7 +83,8 @@ public class ResponseEntityFromGatewayCommandResultAssembler {
     }
 
     private static HttpStatus statusFromFailure(GatewayCommandFailure failure) {
-        if (failure instanceof GatewayCommandFailure.DuplicateUuid) {
+        if (failure instanceof GatewayCommandFailure.DuplicateUuid ||
+                failure instanceof GatewayCommandFailure.DeleteBlocked) {
             return HttpStatus.CONFLICT;
         }
         if (failure instanceof GatewayCommandFailure.OrganizationNotFound ||

@@ -12,6 +12,7 @@ public sealed interface LocationCommandFailure
         permits LocationCommandFailure.DuplicateName,
         LocationCommandFailure.OrganizationNotFound,
         LocationCommandFailure.LocationNotFound,
+        LocationCommandFailure.DeleteBlocked,
         LocationCommandFailure.PlanLimitExceeded {
     /**
      * Returns the message key associated with the failure.
@@ -56,6 +57,16 @@ public sealed interface LocationCommandFailure
         @Override
         public String messageKey() {
             return "asset-management.location.error.location-not-found";
+        }
+    }
+
+    /**
+     * Location deletion blocked by dependent records.
+     */
+    record DeleteBlocked() implements LocationCommandFailure {
+        @Override
+        public String messageKey() {
+            return "asset-management.location.error.delete-blocked";
         }
     }
 

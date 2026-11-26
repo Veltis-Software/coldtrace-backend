@@ -1,0 +1,11 @@
+test_batch_size_is_bounded_at_500 (test_edge_agent.StoreAndForwardTests.test_batch_size_is_bounded_at_500) ... ok
+test_duplicate_confirmation_clears_only_confirmed_batch (test_edge_agent.StoreAndForwardTests.test_duplicate_confirmation_clears_only_confirmed_batch) ... ok
+test_five_minute_outage_preserves_all_fifty_sensor_readings (test_edge_agent.StoreAndForwardTests.test_five_minute_outage_preserves_all_fifty_sensor_readings) ... ok
+test_partial_confirmation_never_deletes_readings (test_edge_agent.StoreAndForwardTests.test_partial_confirmation_never_deletes_readings) ... ok
+test_sequence_survives_confirmations_and_restart (test_edge_agent.StoreAndForwardTests.test_sequence_survives_confirmations_and_restart) ... ok
+test_unconfirmed_batch_survives_restart_and_preserves_key (test_edge_agent.StoreAndForwardTests.test_unconfirmed_batch_survives_restart_and_preserves_key) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.070s
+
+OK

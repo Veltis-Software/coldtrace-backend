@@ -79,4 +79,13 @@ public class GatewayRepositoryImpl implements GatewayRepository {
                 id
         );
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteById(Long id) {
+        gatewayPersistenceRepository.deleteById(id);
+        gatewayPersistenceRepository.flush();
+    }
 }

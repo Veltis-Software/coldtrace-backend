@@ -1,0 +1,13 @@
+[INFO] Reactor Summary for coldtrace-sprint1 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] coldtrace-shared ................................... SUCCESS [ 36.392 s]
+[INFO] coldtrace-monitoring-service ....................... SUCCESS [02:39 min]
+[INFO] coldtrace-alert-service ............................ SUCCESS [ 54.279 s]
+[INFO] coldtrace-api-gateway .............................. SUCCESS [01:02 min]
+[INFO] coldtrace-sprint1 .................................. SUCCESS [  0.001 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  05:19 min
+[INFO] Finished at: 2026-10-09T23:34:02Z
+[INFO] ------------------------------------------------------------------------

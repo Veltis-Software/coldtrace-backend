@@ -26,13 +26,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(
-        value = {
-                "/subscription-plans",
-                "/api/v1/subscription-plans"
-        },
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/v1/subscription-plans", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Subscription Plans", description = "Endpoints for public plan and pricing catalog")
 public class SubscriptionPlansController {
     private final SubscriptionPlanQueryService subscriptionPlanQueryService;

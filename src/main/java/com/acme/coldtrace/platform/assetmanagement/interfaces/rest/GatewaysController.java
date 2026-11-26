@@ -1,6 +1,7 @@
 package com.acme.coldtrace.platform.assetmanagement.interfaces.rest;
 
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.GatewayCommandService;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteGatewayCommand;
 import com.acme.coldtrace.platform.assetmanagement.application.queryservices.GatewayQueryService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetGatewayByIdAndOrganizationIdQuery;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetGatewaysByOrganizationIdQuery;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +44,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/gateways", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/gateways", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Gateways", description = "Endpoints for edge gateways")
 public class GatewaysController {
     private final GatewayCommandService gatewayCommandService;
@@ -201,6 +203,38 @@ public class GatewaysController {
         var gateway = gatewayCommandService.handle(command);
         return ResponseEntityFromGatewayCommandResultAssembler.toResponseEntityFromUpdateResult(
                 gateway,
+                messageSource
+        );
+    }
+
+    /**
+     * Deletes a gateway.
+     *
+     * @param organizationId organization identifier
+     * @param gatewayId gateway identifier
+     * @return empty response on success or failure detail
+     */
+    @Operation(summary = "Delete a gateway",
+            description = "Deletes one edge gateway that belongs to the provided organization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Gateway deleted", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Missing or invalid identifier",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Organization or gateway not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Gateway cannot be deleted because related data exists",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{gatewayId}")
+    public ResponseEntity<?> deleteGateway(
+            @Parameter(name = "organizationId", description = "Organization identifier", required = true)
+            @PathVariable Long organizationId,
+            @Parameter(name = "gatewayId", description = "Gateway identifier", required = true)
+            @PathVariable Long gatewayId) {
+        log.debug("DELETE /organizations/{}/gateways/{}", organizationId, gatewayId);
+        var result = gatewayCommandService.handle(new DeleteGatewayCommand(organizationId, gatewayId));
+        return ResponseEntityFromGatewayCommandResultAssembler.toResponseEntityFromDeleteResult(
+                result,
                 messageSource
         );
     }

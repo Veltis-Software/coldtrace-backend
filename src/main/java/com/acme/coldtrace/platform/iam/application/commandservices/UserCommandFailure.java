@@ -13,6 +13,7 @@ public sealed interface UserCommandFailure
         UserCommandFailure.OrganizationNotFound,
         UserCommandFailure.UserNotFound,
         UserCommandFailure.RoleNotFound,
+        UserCommandFailure.DeleteBlocked,
         UserCommandFailure.PlanLimitExceeded {
     /**
      * Returns the message key associated with the failure.
@@ -67,6 +68,16 @@ public sealed interface UserCommandFailure
         @Override
         public String messageKey() {
             return "identity-access.user.error.role-not-found";
+        }
+    }
+
+    /**
+     * User deletion blocked by dependent records.
+     */
+    record DeleteBlocked() implements UserCommandFailure {
+        @Override
+        public String messageKey() {
+            return "identity-access.user.error.delete-blocked";
         }
     }
 

@@ -56,6 +56,23 @@ public class ResponseEntityFromIoTDeviceCommandResultAssembler {
         );
     }
 
+    /**
+     * Converts an IoT device deletion result into an HTTP response.
+     *
+     * @param result IoT device deletion command result
+     * @param messageSource message source for localized failure details
+     * @return 204 response on success or error response on failure
+     */
+    public static ResponseEntity<?> toResponseEntityFromDeleteResult(
+            Result<?, IoTDeviceCommandFailure> result,
+            MessageSource messageSource
+    ) {
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                failure -> toFailureResponse(failure, messageSource)
+        );
+    }
+
     private static ResponseEntity<?> toFailureResponse(
             IoTDeviceCommandFailure failure,
             MessageSource messageSource
@@ -70,7 +87,9 @@ public class ResponseEntityFromIoTDeviceCommandResultAssembler {
     }
 
     private static HttpStatus statusFromFailure(IoTDeviceCommandFailure failure) {
-        if (failure instanceof IoTDeviceCommandFailure.DuplicateUuid ||
+        if (failure instanceof IoTDeviceCommandFailure.ManagedSourceConfiguration ||
+                failure instanceof IoTDeviceCommandFailure.DuplicateUuid ||
+                failure instanceof IoTDeviceCommandFailure.DeleteBlocked ||
                 failure instanceof IoTDeviceCommandFailure.PlanLimitExceeded) {
             return HttpStatus.CONFLICT;
         }

@@ -1,0 +1,22 @@
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ coldtrace-alert-service ---
+[INFO] Building jar: /source/sprint1/coldtrace-alert-service/target/coldtrace-alert-service-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:3.3.13:repackage (repackage) @ coldtrace-alert-service ---
+[INFO] Replacing main artifact /source/sprint1/coldtrace-alert-service/target/coldtrace-alert-service-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /source/sprint1/coldtrace-alert-service/target/coldtrace-alert-service-0.1.0-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for coldtrace-shared 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] coldtrace-shared ................................... SUCCESS [ 18.742 s]
+[INFO] coldtrace-alert-service ............................ SUCCESS [01:04 min]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:28 min
+[INFO] Finished at: 2026-10-09T23:38:15Z
+[INFO] ------------------------------------------------------------------------

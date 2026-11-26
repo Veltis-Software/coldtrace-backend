@@ -65,4 +65,10 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean existsByEmail(String email) {
         return userPersistenceRepository.existsByEmail(new EmailAddress(email));
     }
+
+    @Override
+    public void deleteById(Long id) {
+        userPersistenceRepository.deleteById(id);
+        userPersistenceRepository.flush();
+    }
 }

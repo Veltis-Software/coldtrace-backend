@@ -1,0 +1,44 @@
+@startuml seq-it2-rendimiento-ruta-critica-lectura
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam ParticipantBackgroundColor #438dd5
+skinparam ParticipantFontColor white
+skinparam ParticipantBorderColor #2e6295
+skinparam ActorBackgroundColor #08427b
+skinparam ActorBorderColor #08427b
+skinparam DatabaseBackgroundColor #438dd5
+skinparam DatabaseFontColor black
+skinparam QueueBackgroundColor #438dd5
+skinparam QueueFontColor black
+skinparam SequenceLifeLineBorderColor #888888
+skinparam NoteBackgroundColor #fff8c4
+skinparam NoteBorderColor #c9b200
+skinparam ArrowColor #333333
+title Iteración 2 (Rendimiento) - Ruta crítica de una lectura con Transactional Outbox y Pub/Sub
+participant "Edge Gateway\nAgent" as E #2e7d32
+participant "monitoring-service" as M
+database "Esquema\nmonitoring" as DB
+participant "Outbox Relay" as R
+queue "Pub/Sub" as P
+participant "alert-service" as A
+participant "report-service" as RP
+actor "Usuario" as U
+
+E -> M : POST /telemetry/batches
+activate M
+M -> M : evalúa con réplica local\nde rangos (sin llamar a asset-service)
+M -> DB : BEGIN\nINSERT sensor_readings\nUPDATE asset_current_state\nINSERT outbox (threshold.breached)\nCOMMIT
+M --> E : 202 Accepted
+deactivate M
+note right of M : 95 % confirmadas < 2 s (QA-04)
+R -> DB : lee eventos pendientes
+R -> P : publica threshold.breached (prioritario)\ny readings.ingested
+P -> A : push threshold.breached
+A -> A : registra processed_events\n(consumidor idempotente)\nabre incidencia
+A -> U : notificación con enlace /alerts/{id}
+P -> RP : push readings.ingested
+RP -> RP : actualiza reading_aggregates (por hora)
+note right of A : 99 % evaluadas y persistidas < 5 s;\nlectura -> alerta en segundos (BG02)
+@enduml

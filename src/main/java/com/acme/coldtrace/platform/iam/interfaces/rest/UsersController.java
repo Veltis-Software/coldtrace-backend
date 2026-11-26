@@ -1,6 +1,7 @@
 package com.acme.coldtrace.platform.iam.interfaces.rest;
 
 import com.acme.coldtrace.platform.iam.application.commandservices.UserCommandService;
+import com.acme.coldtrace.platform.iam.domain.model.commands.DeleteUserCommand;
 import com.acme.coldtrace.platform.iam.application.queryservices.UserQueryService;
 import com.acme.coldtrace.platform.iam.domain.model.queries.GetUsersByOrganizationIdQuery;
 import com.acme.coldtrace.platform.iam.interfaces.rest.resources.AssignUserRoleResource;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +43,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/users", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/users", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Users", description = "Endpoints for users")
 public class UsersController {
     private final UserCommandService userCommandService;
@@ -160,6 +162,38 @@ public class UsersController {
         var user = userCommandService.handle(command);
         return ResponseEntityFromUserCommandResultAssembler.toResponseEntityFromRoleAssignmentResult(
                 user,
+                messageSource
+        );
+    }
+
+    /**
+     * Deletes an existing organization user.
+     *
+     * @param organizationId organization identifier from the route
+     * @param userId user identifier from the route
+     * @return empty response on success or failure detail
+     */
+    @Operation(summary = "Delete a user",
+            description = "Deletes one user that belongs to the provided organization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User deleted", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Missing or invalid identifier",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Organization or user not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "User cannot be deleted because related data exists",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteUser(
+            @Parameter(name = "organizationId", description = "Organization identifier", required = true)
+            @PathVariable Long organizationId,
+            @Parameter(name = "userId", description = "User identifier", required = true)
+            @PathVariable Long userId) {
+        log.debug("DELETE /organizations/{}/users/{}", organizationId, userId);
+        var result = userCommandService.handle(new DeleteUserCommand(organizationId, userId));
+        return ResponseEntityFromUserCommandResultAssembler.toResponseEntityFromDeleteResult(
+                result,
                 messageSource
         );
     }

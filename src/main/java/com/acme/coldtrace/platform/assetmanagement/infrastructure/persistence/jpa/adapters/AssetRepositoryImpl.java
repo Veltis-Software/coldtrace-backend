@@ -94,4 +94,13 @@ public class AssetRepositoryImpl implements AssetRepository {
                 id
         );
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteById(Long id) {
+        assetPersistenceRepository.deleteById(id);
+        assetPersistenceRepository.flush();
+    }
 }

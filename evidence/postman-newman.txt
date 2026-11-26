@@ -1,0 +1,60 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+ColdTrace TP1 local vertical flow
+
+→ Authenticate local fixture
+  POST http://127.0.0.1:18080/api/v1/authentication/sign-in [200 OK, 787B, 93ms]
+  √  HTTP 200
+
+→ Resolve owning organization
+  GET http://127.0.0.1:18080/api/v1/session/context [200 OK, 454B, 17ms]
+  √  HTTP 200
+
+→ Ingest deviation
+  POST http://127.0.0.1:18080/api/v1/telemetry/batches [202 Accepted, 213B, 113ms]
+  √  HTTP 202
+
+→ Repeat batch without duplication
+  POST http://127.0.0.1:18080/api/v1/telemetry/batches [202 Accepted, 213B, 86ms]
+  √  HTTP 202
+  √  duplicate
+
+→ Reject invalid gateway key
+  POST http://127.0.0.1:18080/api/v1/telemetry/batches [401 Unauthorized, 324B, 90ms]
+  √  HTTP 401
+
+→ Read latest asset state
+  GET http://127.0.0.1:18080/api/v1/assets/1/state [200 OK, 528B, 29ms]
+  √  HTTP 200
+
+→ Read projected states
+  GET http://127.0.0.1:18080/api/v1/assets/states?page=0&size=10 [200 OK, 3.04kB, 34ms]
+  √  HTTP 200
+
+→ Read generated alerts
+  GET http://127.0.0.1:18080/api/v1/alerts [200 OK, 6.47kB, 35ms]
+  √  HTTP 200
+
+┌─────────────────────────┬───────────────────┬───────────────────┐
+│                         │          executed │            failed │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              iterations │                 1 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│                requests │                 8 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│            test-scripts │                 8 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│      prerequest-scripts │                 8 │                 0 │
+├─────────────────────────┼───────────────────┼───────────────────┤
+│              assertions │                 9 │                 0 │
+├─────────────────────────┴───────────────────┴───────────────────┤
+│ total run duration: 1166ms                                      │
+├─────────────────────────────────────────────────────────────────┤
+│ total data received: 9.98kB (approx)                            │
+├─────────────────────────────────────────────────────────────────┤
+│ average response time: 62ms [min: 17ms, max: 113ms, s.d.: 34ms] │
+└─────────────────────────────────────────────────────────────────┘

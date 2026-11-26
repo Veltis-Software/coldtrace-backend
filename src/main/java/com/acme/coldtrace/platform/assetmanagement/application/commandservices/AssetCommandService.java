@@ -2,6 +2,7 @@ package com.acme.coldtrace.platform.assetmanagement.application.commandservices;
 
 import com.acme.coldtrace.platform.assetmanagement.domain.model.aggregates.Asset;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.CreateAssetCommand;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteAssetCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.UpdateAssetCommand;
 import com.acme.coldtrace.platform.shared.application.result.Result;
 
@@ -33,4 +34,13 @@ public interface AssetCommandService {
      * @see UpdateAssetCommand
      */
     Result<Asset, AssetCommandFailure> handle(UpdateAssetCommand command);
+
+    /**
+     * Handles the asset deletion use case.
+     *
+     * @param command command containing route-scoped deletion identifiers
+     * @return success with the command or a typed command failure
+     * @see DeleteAssetCommand
+     */
+    Result<DeleteAssetCommand, AssetCommandFailure> handle(DeleteAssetCommand command);
 }

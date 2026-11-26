@@ -5,14 +5,20 @@ on:
     branches:
       - develop
       - main
+      - docs/architecture-interoperability
   push:
     branches:
       - develop
       - main
+      - feature/source-configuration
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   build:

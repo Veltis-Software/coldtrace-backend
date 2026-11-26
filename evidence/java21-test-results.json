@@ -1,0 +1,54 @@
+{
+  "runtime": "Docker maven:3.9.9-eclipse-temurin-21",
+  "suites": [
+    {
+      "suite": "com.acme.coldtrace.alerts.IncidentConsumerTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.gateway.GatewayRoutingTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.platform.monitoring.ArchitectureTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.platform.monitoring.OutboxRelayTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.platform.monitoring.RunCucumberTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.platform.monitoring.TelemetryIntegrationTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.acme.coldtrace.shared.CorrelationIdsTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

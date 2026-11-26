@@ -1,0 +1,180 @@
+asyncapi: 2.6.0
+info:
+  title: ColdTrace integration events
+  version: 1.0.0
+  description: |
+    Eventos de integración entre microservicios sobre Google Cloud Pub/Sub (ADR-0009, ADR-0010).
+    Reglas obligatorias:
+    - El productor escribe el evento en `outbox_events` en la misma transacción del cambio de negocio; el OutboxRelay lo publica.
+    - El mensaje Pub/Sub lleva el sobre (Envelope) serializado en JSON UTF-8 como `data`, y los atributos
+      `eventType`, `eventId`, `organizationId`, `correlationId`.
+    - Cada consumidor registra `(consumer, event_id)` en `processed_events` y descarta duplicados.
+    - En el entorno dev el nombre del tópico lleva el sufijo `-dev`.
+    - Cambios incompatibles en el payload => nuevo `version` y nuevo ADR.
+defaultContentType: application/json
+servers:
+  gcp:
+    url: pubsub.googleapis.com
+    protocol: googlepubsub
+    description: Proyecto GCP de ColdTrace (región southamerica-west1)
+channels:
+  threshold.breached:
+    description: Lectura fuera del rango seguro. Tópico prioritario con suscripción dedicada.
+    publish:
+      operationId: publishThresholdBreached
+      summary: monitoring-service publica
+      message: { $ref: '#/components/messages/ThresholdBreached' }
+    subscribe:
+      operationId: onThresholdBreached
+      summary: 'alert-service (suscripción: alert-service.threshold-breached)'
+      message: { $ref: '#/components/messages/ThresholdBreached' }
+  source.gap:
+    description: Apertura o cierre de una brecha de datos de un activo.
+    publish:
+      operationId: publishSourceGap
+      message: { $ref: '#/components/messages/SourceGap' }
+    subscribe:
+      operationId: onSourceGap
+      summary: 'alert-service (suscripción: alert-service.source-gap)'
+      message: { $ref: '#/components/messages/SourceGap' }
+  readings.ingested:
+    description: Lote de lecturas persistido (para el modelo de lectura histórico).
+    publish:
+      operationId: publishReadingsIngested
+      message: { $ref: '#/components/messages/ReadingsIngested' }
+    subscribe:
+      operationId: onReadingsIngested
+      summary: 'report-service (suscripción: report-service.readings-ingested)'
+      message: { $ref: '#/components/messages/ReadingsIngested' }
+  asset.settings-changed:
+    description: Cambio de rango seguro de un activo.
+    publish:
+      operationId: publishAssetSettingsChanged
+      summary: asset-service publica
+      message: { $ref: '#/components/messages/AssetSettingsChanged' }
+    subscribe:
+      operationId: onAssetSettingsChanged
+      summary: 'monitoring-service (suscripción: monitoring-service.asset-settings-changed)'
+      message: { $ref: '#/components/messages/AssetSettingsChanged' }
+  incident.opened:
+    description: Se abrió una incidencia.
+    publish:
+      operationId: publishIncidentOpened
+      summary: alert-service publica
+      message: { $ref: '#/components/messages/IncidentOpened' }
+    subscribe:
+      operationId: onIncidentOpened
+      summary: 'report-service y ai-assistance-service (suscripciones: report-service.incident-opened, ai-assistance-service.incident-opened)'
+      message: { $ref: '#/components/messages/IncidentOpened' }
+components:
+  messages:
+    ThresholdBreached:
+      name: threshold.breached
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              payload:
+                type: object
+                required: [assetId, iotDeviceId, readingId, recordedAt, severity]
+                properties:
+                  assetId: { type: integer, format: int64 }
+                  iotDeviceId: { type: integer, format: int64 }
+                  readingId: { type: integer, format: int64 }
+                  temperature: { type: number, nullable: true }
+                  humidity: { type: number, nullable: true }
+                  safeMinTemperature: { type: number }
+                  safeMaxTemperature: { type: number }
+                  safeMinHumidity: { type: number, nullable: true }
+                  safeMaxHumidity: { type: number, nullable: true }
+                  recordedAt: { type: string, format: date-time }
+                  severity: { type: string, enum: [WARNING, CRITICAL] }
+    SourceGap:
+      name: source.gap
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              payload:
+                type: object
+                required: [assetId, gatewayId, state, lastSeenAt]
+                properties:
+                  assetId: { type: integer, format: int64 }
+                  gatewayId: { type: integer, format: int64 }
+                  iotDeviceId: { type: integer, format: int64, nullable: true }
+                  state: { type: string, enum: [OPENED, CLOSED] }
+                  lastSeenAt: { type: string, format: date-time, description: 'max(last_heartbeat_at, last_recorded_at)' }
+    ReadingsIngested:
+      name: readings.ingested
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              payload:
+                type: object
+                required: [readings]
+                properties:
+                  readings:
+                    type: array
+                    maxItems: 500
+                    items:
+                      type: object
+                      required: [readingId, assetId, recordedAt, outOfRange]
+                      properties:
+                        readingId: { type: integer, format: int64 }
+                        assetId: { type: integer, format: int64 }
+                        iotDeviceId: { type: integer, format: int64 }
+                        temperature: { type: number, nullable: true }
+                        humidity: { type: number, nullable: true }
+                        recordedAt: { type: string, format: date-time }
+                        outOfRange: { type: boolean }
+    AssetSettingsChanged:
+      name: asset.settings-changed
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              payload:
+                type: object
+                required: [assetId, minimumTemperature, maximumTemperature, alertThresholdMinutes, settingsVersion]
+                properties:
+                  assetId: { type: integer, format: int64 }
+                  minimumTemperature: { type: number }
+                  maximumTemperature: { type: number }
+                  minimumHumidity: { type: number, nullable: true }
+                  maximumHumidity: { type: number, nullable: true }
+                  alertThresholdMinutes: { type: integer, description: 'asset_settings.alert_threshold_minutes' }
+                  settingsVersion: { type: integer, format: int64, description: 'Monótono; el consumidor ignora versiones menores a la almacenada' }
+    IncidentOpened:
+      name: incident.opened
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - type: object
+            properties:
+              payload:
+                type: object
+                required: [incidentId, assetId, type, severity, detectedAt]
+                properties:
+                  incidentId: { type: integer, format: int64 }
+                  assetId: { type: integer, format: int64 }
+                  type: { type: string }
+                  severity: { type: string }
+                  detectedAt: { type: string, format: date-time }
+  schemas:
+    Envelope:
+      type: object
+      required: [eventId, eventType, version, occurredAt, organizationId, payload]
+      properties:
+        eventId: { type: string, format: uuid }
+        eventType: { type: string, example: threshold.breached }
+        version: { type: integer, const: 1 }
+        occurredAt: { type: string, format: date-time }
+        organizationId: { type: integer, format: int64 }
+        correlationId: { type: string }
+        producer: { type: string, example: monitoring-service }
+        payload: { type: object }

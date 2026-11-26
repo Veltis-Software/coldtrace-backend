@@ -1,0 +1,440 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:18083",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/telemetry/heartbeats": {
+      "post": {
+        "tags": [
+          "telemetry-controller"
+        ],
+        "summary": "Register gateway contact using server receipt time",
+        "operationId": "registerHeartbeat",
+        "parameters": [
+          {
+            "name": "X-Gateway-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Heartbeat recorded"
+          }
+        },
+        "security": [
+          {
+            "gatewayKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/telemetry/batches": {
+      "post": {
+        "tags": [
+          "telemetry-controller"
+        ],
+        "summary": "Persist an ordered batch atomically with deduplication",
+        "operationId": "ingestTelemetryBatch",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Gateway-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Committed; accepted and duplicated readings",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelemetryBatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "gatewayKey": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{assetId}/state": {
+      "get": {
+        "tags": [
+          "asset-state-controller"
+        ],
+        "summary": "Read current state for the authenticated organization",
+        "operationId": "getAssetCurrentState",
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetCurrentState"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/states": {
+      "get": {
+        "tags": [
+          "asset-state-controller"
+        ],
+        "summary": "List projected states with organization and optional location filters",
+        "operationId": "listAssetCurrentStates",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatePage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HeartbeatRequest": {
+        "required": [
+          "gatewayUuid",
+          "sentAt"
+        ],
+        "type": "object",
+        "properties": {
+          "gatewayUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pendingReadings": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReadingDto": {
+        "required": [
+          "deviceUuid",
+          "recordedAt",
+          "sequenceNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "deviceUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequenceNumber": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "temperature": {
+            "type": "number",
+            "format": "double"
+          },
+          "humidity": {
+            "type": "number",
+            "format": "double"
+          },
+          "batteryLevel": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "signalStrength": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TelemetryBatchRequest": {
+        "required": [
+          "gatewayUuid",
+          "readings"
+        ],
+        "type": "object",
+        "properties": {
+          "gatewayUuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "readings": {
+            "maxItems": 500,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadingDto"
+            }
+          }
+        }
+      },
+      "TelemetryBatchResponse": {
+        "required": [
+          "accepted",
+          "duplicated"
+        ],
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "duplicated": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AssetCurrentState": {
+        "required": [
+          "assetId",
+          "organizationId",
+          "status",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "organizationId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "OUT_OF_RANGE",
+              "NO_DATA"
+            ]
+          },
+          "lastTemperature": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lastHumidity": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lastRecordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "safeRange": {
+            "$ref": "#/components/schemas/SafeRange"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SafeRange": {
+        "type": "object",
+        "properties": {
+          "minTemperature": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxTemperature": {
+            "type": "number",
+            "format": "double"
+          },
+          "minHumidity": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "maxHumidity": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "toleranceMinutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "StatePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetCurrentState"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "gatewayKey": {
+        "type": "apiKey",
+        "name": "X-Gateway-Key",
+        "in": "header"
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

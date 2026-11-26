@@ -58,4 +58,12 @@ public interface GatewayRepository {
      * @return true when another gateway uses the uuid
      */
     boolean existsByOrganizationIdAndUuidAndIdNot(Long organizationId, String uuid, Long id);
+
+    /**
+     * Deletes a gateway by identifier after the application service has checked
+     * organization ownership.
+     *
+     * @param id gateway identifier
+     */
+    void deleteById(Long id);
 }

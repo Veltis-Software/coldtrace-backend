@@ -1,0 +1,41 @@
+@startuml seq-it3-usabilidad-reconocer-y-asignar
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam ParticipantBackgroundColor #438dd5
+skinparam ParticipantFontColor white
+skinparam ParticipantBorderColor #2e6295
+skinparam ActorBackgroundColor #08427b
+skinparam ActorBorderColor #08427b
+skinparam DatabaseBackgroundColor #438dd5
+skinparam DatabaseFontColor black
+skinparam QueueBackgroundColor #438dd5
+skinparam QueueFontColor black
+skinparam SequenceLifeLineBorderColor #888888
+skinparam NoteBackgroundColor #fff8c4
+skinparam NoteBorderColor #c9b200
+skinparam ArrowColor #333333
+title Iteración 3 (Usabilidad) - Reconocer y asignar una alerta desde la notificación
+actor "Responsable de\noperaciones" as U
+participant "Web Push /\nWhatsApp" as N #999999
+participant "Web Application\n(Angular)" as W
+participant "API Gateway" as G
+participant "alert-service" as A
+actor "Otros miembros\ndel equipo" as T
+
+N -> U : alerta crítica con enlace directo
+U -> W : toca el enlace /alerts/{id}
+W -> G : GET /api/v1/alerts/{id}/detail
+G -> A : enruta
+A --> W : activo, lectura, rango, estado,\nacciones por rol, responsable sugerido
+W --> U : vista única con botón\n"Reconocer y asignar"
+U -> W : confirma (responsable preseleccionado)
+W -> G : POST /api/v1/alerts/{id}/acknowledgement {assigneeId}
+G -> A : enruta
+A -> A : reconoce + asigna\n(una transacción)
+A --> W : 200 {state, assignee, acknowledgedAt}
+W --> U : confirmación visual (< 2 s)\n+ opción "Deshacer" (10 s)
+A -> T : SSE alert.updated
+note right of U : 90 % completa en < 1 min\nsin asistencia (QA-07)
+@enduml

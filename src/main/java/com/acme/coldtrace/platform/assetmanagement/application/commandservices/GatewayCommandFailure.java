@@ -9,7 +9,8 @@ public sealed interface GatewayCommandFailure
         permits GatewayCommandFailure.DuplicateUuid,
         GatewayCommandFailure.OrganizationNotFound,
         GatewayCommandFailure.LocationNotFound,
-        GatewayCommandFailure.GatewayNotFound {
+        GatewayCommandFailure.GatewayNotFound,
+        GatewayCommandFailure.DeleteBlocked {
     /**
      * Returns the message key associated with the failure.
      *
@@ -63,6 +64,16 @@ public sealed interface GatewayCommandFailure
         @Override
         public String messageKey() {
             return "asset-management.gateway.error.gateway-not-found";
+        }
+    }
+
+    /**
+     * Gateway deletion blocked by dependent records.
+     */
+    record DeleteBlocked() implements GatewayCommandFailure {
+        @Override
+        public String messageKey() {
+            return "asset-management.gateway.error.delete-blocked";
         }
     }
 }

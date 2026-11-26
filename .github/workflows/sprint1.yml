@@ -1,0 +1,42 @@
+name: Sprint 1 validation
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'fix/**', 'release/**', 'hotfix/**']
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: chmod +x mvnw && ./mvnw -B -f sprint1/pom.xml verify
+      - run: python -m unittest discover -s sprint1/coldtrace-edge-gateway -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sprint1-test-evidence
+          path: |
+            sprint1/**/target/surefire-reports
+            sprint1/**/target/cucumber.*
+  container:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [coldtrace-monitoring-service, coldtrace-alert-service, coldtrace-api-gateway]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - run: docker build -f sprint1/docker/Dockerfile --build-arg MODULE=${{ matrix.module }} -t ${{ matrix.module }}:ci .

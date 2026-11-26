@@ -1,0 +1,15 @@
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for coldtrace-shared 0.1.0-SNAPSHOT:
+[INFO] 
+[INFO] coldtrace-shared ................................... SUCCESS [ 24.310 s]
+[INFO] coldtrace-monitoring-service ....................... SUCCESS [01:35 min]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:05 min
+[INFO] Finished at: 2026-10-09T23:44:33Z
+[INFO] ------------------------------------------------------------------------

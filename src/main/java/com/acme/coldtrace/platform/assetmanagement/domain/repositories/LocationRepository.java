@@ -58,4 +58,12 @@ public interface LocationRepository {
      * @return true when another location uses the same name
      */
     boolean existsByOrganizationIdAndNameAndIdNot(Long organizationId, String name, Long id);
+
+    /**
+     * Deletes a location by identifier after the application service has checked
+     * organization ownership.
+     *
+     * @param id location identifier
+     */
+    void deleteById(Long id);
 }

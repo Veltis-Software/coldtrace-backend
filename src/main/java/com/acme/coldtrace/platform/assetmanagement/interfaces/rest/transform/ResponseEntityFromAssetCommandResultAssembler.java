@@ -61,6 +61,23 @@ public class ResponseEntityFromAssetCommandResultAssembler {
         );
     }
 
+    /**
+     * Converts an asset deletion result into an HTTP response.
+     *
+     * @param result asset deletion command result
+     * @param messageSource message source for localized failure details
+     * @return 204 response on success or error response on failure
+     */
+    public static ResponseEntity<?> toResponseEntityFromDeleteResult(
+            Result<?, AssetCommandFailure> result,
+            MessageSource messageSource
+    ) {
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                failure -> toFailureResponse(failure, messageSource)
+        );
+    }
+
     private static ResponseEntity<?> toFailureResponse(
             AssetCommandFailure failure,
             MessageSource messageSource
@@ -76,6 +93,7 @@ public class ResponseEntityFromAssetCommandResultAssembler {
 
     private static HttpStatus statusFromFailure(AssetCommandFailure failure) {
         if (failure instanceof AssetCommandFailure.DuplicateUuid ||
+                failure instanceof AssetCommandFailure.DeleteBlocked ||
                 failure instanceof AssetCommandFailure.PlanLimitExceeded) {
             return HttpStatus.CONFLICT;
         }

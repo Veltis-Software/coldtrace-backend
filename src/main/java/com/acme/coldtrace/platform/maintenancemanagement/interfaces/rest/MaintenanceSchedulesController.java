@@ -46,7 +46,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/maintenance-schedules", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/maintenance-schedules", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Maintenance Schedules", description = "Endpoints for preventive maintenance planning")
 public class MaintenanceSchedulesController {
     private final MaintenanceScheduleCommandService maintenanceScheduleCommandService;

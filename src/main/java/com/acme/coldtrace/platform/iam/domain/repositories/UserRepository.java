@@ -63,4 +63,12 @@ public interface UserRepository {
      * @return true when the email exists
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Deletes a user by identifier after the application service has checked
+     * organization ownership.
+     *
+     * @param id user identifier
+     */
+    void deleteById(Long id);
 }

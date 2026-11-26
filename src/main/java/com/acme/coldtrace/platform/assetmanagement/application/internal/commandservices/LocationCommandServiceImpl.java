@@ -4,6 +4,7 @@ import com.acme.coldtrace.platform.assetmanagement.application.commandservices.L
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.LocationCommandService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.aggregates.Location;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.CreateLocationCommand;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteLocationCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.UpdateLocationCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.repositories.LocationRepository;
 import com.acme.coldtrace.platform.billing.interfaces.acl.SubscriptionBillingContextFacade;
@@ -123,6 +124,37 @@ public class LocationCommandServiceImpl implements LocationCommandService {
                 return Result.failure(new LocationCommandFailure.DuplicateName());
             }
             throw exception;
+        }
+    }
+
+    /**
+     * Handles deletion of a location aggregate.
+     *
+     * @param command command containing route-scoped deletion identifiers
+     * @return success with the command or failure with a location command error
+     * @see DeleteLocationCommand
+     */
+    @Override
+    @Transactional
+    public Result<DeleteLocationCommand, LocationCommandFailure> handle(DeleteLocationCommand command) {
+        if (!organizationRepository.existsById(command.organizationId())) {
+            log.warn("Organization not found for location deletion: organizationId={}", command.organizationId());
+            return Result.failure(new LocationCommandFailure.OrganizationNotFound());
+        }
+        if (locationRepository.findByIdAndOrganizationId(command.locationId(), command.organizationId()).isEmpty()) {
+            log.warn("Location not found for deletion: organizationId={}, locationId={}",
+                    command.organizationId(), command.locationId());
+            return Result.failure(new LocationCommandFailure.LocationNotFound());
+        }
+        try {
+            locationRepository.deleteById(command.locationId());
+            log.info("Location deleted: id={}, organizationId={}",
+                    command.locationId(), command.organizationId());
+            return Result.success(command);
+        } catch (DataIntegrityViolationException exception) {
+            log.warn("Location deletion blocked by related records: organizationId={}, locationId={}",
+                    command.organizationId(), command.locationId());
+            return Result.failure(new LocationCommandFailure.DeleteBlocked());
         }
     }
 

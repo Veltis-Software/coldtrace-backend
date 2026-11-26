@@ -37,7 +37,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Organizations", description = "Endpoints for organizations")
 public class OrganizationsController {
     private final OrganizationCommandService organizationCommandService;

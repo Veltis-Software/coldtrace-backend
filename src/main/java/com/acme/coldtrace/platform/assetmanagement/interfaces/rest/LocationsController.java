@@ -1,6 +1,7 @@
 package com.acme.coldtrace.platform.assetmanagement.interfaces.rest;
 
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.LocationCommandService;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteLocationCommand;
 import com.acme.coldtrace.platform.assetmanagement.application.queryservices.LocationQueryService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetLocationByIdAndOrganizationIdQuery;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.queries.GetLocationsByOrganizationIdQuery;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +44,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/locations", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/locations", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Locations", description = "Endpoints for operational locations")
 public class LocationsController {
     private final LocationCommandService locationCommandService;
@@ -201,6 +203,38 @@ public class LocationsController {
         var location = locationCommandService.handle(command);
         return ResponseEntityFromLocationCommandResultAssembler.toResponseEntityFromUpdateResult(
                 location,
+                messageSource
+        );
+    }
+
+    /**
+     * Deletes a location.
+     *
+     * @param organizationId organization identifier
+     * @param locationId location identifier
+     * @return empty response on success or failure detail
+     */
+    @Operation(summary = "Delete a location",
+            description = "Deletes one operational location that belongs to the provided organization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Location deleted", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Missing or invalid identifier",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "404", description = "Organization or location not found",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Location cannot be deleted because related data exists",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{locationId}")
+    public ResponseEntity<?> deleteLocation(
+            @Parameter(name = "organizationId", description = "Organization identifier", required = true)
+            @PathVariable Long organizationId,
+            @Parameter(name = "locationId", description = "Location identifier", required = true)
+            @PathVariable Long locationId) {
+        log.debug("DELETE /organizations/{}/locations/{}", organizationId, locationId);
+        var result = locationCommandService.handle(new DeleteLocationCommand(organizationId, locationId));
+        return ResponseEntityFromLocationCommandResultAssembler.toResponseEntityFromDeleteResult(
+                result,
                 messageSource
         );
     }

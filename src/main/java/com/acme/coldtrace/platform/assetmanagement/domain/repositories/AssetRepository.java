@@ -58,4 +58,12 @@ public interface AssetRepository {
      * @return true when another asset uses the same uuid
      */
     boolean existsByOrganizationIdAndUuidAndIdNot(Long organizationId, String uuid, Long id);
+
+    /**
+     * Deletes an asset by identifier after the application service has checked
+     * organization ownership.
+     *
+     * @param id asset identifier
+     */
+    void deleteById(Long id);
 }

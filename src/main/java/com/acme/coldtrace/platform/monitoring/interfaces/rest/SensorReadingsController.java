@@ -48,7 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/sensor-readings", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/sensor-readings", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Sensor Readings", description = "Endpoints for persisted telemetry readings")
 public class SensorReadingsController {
     private final SensorReadingCommandService sensorReadingCommandService;

@@ -71,6 +71,31 @@ public class ResponseEntityFromUserCommandResultAssembler {
     }
 
     /**
+     * Converts a user deletion result into an HTTP response.
+     *
+     * @param result user deletion command result
+     * @param messageSource message source for localized failure details
+     * @return 204 response on success or error response on failure
+     */
+    public static ResponseEntity<?> toResponseEntityFromDeleteResult(
+            Result<?, UserCommandFailure> result,
+            MessageSource messageSource
+    ) {
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                failure -> {
+                    var status = statusFromFailure(failure);
+                    var problemDetail = ProblemDetail.forStatusAndDetail(
+                            status,
+                            localizeMessage(messageSource, failure)
+                    );
+                    appendPlanEntitlementProperties(problemDetail, failure);
+                    return ResponseEntity.status(status).body(problemDetail);
+                }
+        );
+    }
+
+    /**
      * Maps a user command failure to an HTTP status.
      *
      * @param failure user command failure
@@ -78,6 +103,7 @@ public class ResponseEntityFromUserCommandResultAssembler {
      */
     private static HttpStatus statusFromFailure(UserCommandFailure failure) {
         if (failure instanceof UserCommandFailure.DuplicateEmail ||
+                failure instanceof UserCommandFailure.DeleteBlocked ||
                 failure instanceof UserCommandFailure.PlanLimitExceeded) {
             return HttpStatus.CONFLICT;
         }

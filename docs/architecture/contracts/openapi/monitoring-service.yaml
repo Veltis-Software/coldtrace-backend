@@ -1,0 +1,197 @@
+openapi: 3.0.3
+info:
+  title: ColdTrace monitoring-service API
+  version: 1.0.0
+  description: |
+    Endpoints nuevos o modificados por ADD (Iteraciones 1 y 2). ADR-0005, ADR-0006, ADR-0007, ADR-0011.
+    Los endpoints de telemetría los consume el Edge Gateway Agent; los de estado, la Web Application.
+servers:
+  - url: http://localhost:8080
+    description: API Gateway (local)
+tags:
+  - name: Telemetry
+  - name: Asset State
+paths:
+  /api/v1/telemetry/batches:
+    post:
+      tags: [Telemetry]
+      operationId: ingestTelemetryBatch
+      summary: Ingesta idempotente de un lote ordenado de lecturas (máx. 500)
+      security:
+        - gatewayKey: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: UUID del lote generado por el Edge Gateway Agent. Reenviar el mismo lote reutiliza la misma clave.
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TelemetryBatchRequest' }
+      responses:
+        '202':
+          description: Lote aceptado y persistido (respuesta tras el commit de la transacción).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelemetryBatchResponse' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '413':
+          description: El lote supera 500 lecturas.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /api/v1/telemetry/heartbeats:
+    post:
+      tags: [Telemetry]
+      operationId: registerHeartbeat
+      summary: Heartbeat del Edge Gateway Agent (cada 10 s)
+      security:
+        - gatewayKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HeartbeatRequest' }
+      responses:
+        '204': { description: Heartbeat registrado (actualiza monitored_gateways.last_heartbeat_at). }
+        '401': { $ref: '#/components/responses/Problem' }
+  /api/v1/assets/{assetId}/state:
+    get:
+      tags: [Asset State]
+      operationId: getAssetCurrentState
+      summary: Estado actual de un activo (lee solo asset_current_state)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Estado actual
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AssetCurrentState' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/assets/states:
+    get:
+      tags: [Asset State]
+      operationId: listAssetCurrentStates
+      summary: Vista consolidada de activos de la organización del token (US16)
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: locationId, in: query, schema: { type: integer, format: int64 } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/AssetStatus' } }
+        - { name: page, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+        - { name: size, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Página de estados
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page, size, total]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/AssetCurrentState' }
+                  page: { type: integer }
+                  size: { type: integer }
+                  total: { type: integer, format: int64 }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    gatewayKey:
+      type: apiKey
+      in: header
+      name: X-Gateway-Key
+      description: Clave del gateway; se almacena como hash en gateways.api_key_hash (asset-service la provisiona).
+  parameters:
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      schema: { type: string }
+  responses:
+    Problem:
+      description: Error (RFC 7807)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    TelemetryBatchRequest:
+      type: object
+      required: [gatewayUuid, readings]
+      properties:
+        gatewayUuid: { type: string, format: uuid }
+        readings:
+          type: array
+          minItems: 1
+          maxItems: 500
+          description: Ordenadas ascendentemente por recordedAt.
+          items: { $ref: '#/components/schemas/ReadingDto' }
+    ReadingDto:
+      type: object
+      required: [deviceUuid, sequenceNumber, recordedAt]
+      properties:
+        deviceUuid: { type: string, format: uuid, description: iot_devices.uuid }
+        sequenceNumber: { type: integer, format: int64, minimum: 0, description: Contador monotónico por dispositivo en el Edge Agent }
+        recordedAt: { type: string, format: date-time, description: 'Momento de captura (columna sensor_readings.recorded_at, UTC)' }
+        temperature: { type: number, format: double, nullable: true }
+        humidity: { type: number, format: double, nullable: true }
+        batteryLevel: { type: integer, nullable: true }
+        signalStrength: { type: integer, nullable: true }
+    TelemetryBatchResponse:
+      type: object
+      required: [accepted, duplicated]
+      properties:
+        accepted: { type: integer, description: Lecturas nuevas persistidas }
+        duplicated: { type: integer, description: Lecturas ya existentes (misma clave única) }
+    HeartbeatRequest:
+      type: object
+      required: [gatewayUuid, sentAt]
+      properties:
+        gatewayUuid: { type: string, format: uuid }
+        sentAt: { type: string, format: date-time }
+        pendingReadings: { type: integer, minimum: 0, description: Lecturas retenidas aún no confirmadas }
+    AssetStatus:
+      type: string
+      enum: [NORMAL, OUT_OF_RANGE, NO_DATA]
+    AssetCurrentState:
+      type: object
+      required: [assetId, organizationId, status, updatedAt]
+      properties:
+        assetId: { type: integer, format: int64 }
+        organizationId: { type: integer, format: int64 }
+        status: { $ref: '#/components/schemas/AssetStatus' }
+        lastTemperature: { type: number, format: double, nullable: true }
+        lastHumidity: { type: number, format: double, nullable: true }
+        lastRecordedAt: { type: string, format: date-time, nullable: true }
+        safeRange: { $ref: '#/components/schemas/SafeRange' }
+        updatedAt: { type: string, format: date-time }
+    SafeRange:
+      type: object
+      properties:
+        minTemperature: { type: number, format: double }
+        maxTemperature: { type: number, format: double }
+        minHumidity: { type: number, format: double, nullable: true }
+        maxHumidity: { type: number, format: double, nullable: true }
+        toleranceMinutes: { type: integer }
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }

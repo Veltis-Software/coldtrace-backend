@@ -1,3 +1,7 @@
+> Repository role: `coldtrace-backend` is the brownfield application. Extracted
+> services are owned by their independent repositories; `sprint1/` pins them as
+> Git submodules for reproducible integration. Clone with `--recurse-submodules`.
+
 # ColdTrace Platform
 
 Spring Boot backend for the ColdTrace final project.

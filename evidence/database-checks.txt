@@ -1,0 +1,8 @@
+event_id	published_at	attempts
+0763206b-d13f-4742-9b49-9bb9a28fd9f8	2026-10-09 18:27:43.987729	49
+readings	devices
+1607	50
+duplicate_keys
+0
+recovered_incidents
+1

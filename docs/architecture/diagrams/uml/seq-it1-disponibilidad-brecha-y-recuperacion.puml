@@ -1,0 +1,50 @@
+@startuml seq-it1-disponibilidad-brecha-y-recuperacion
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam ParticipantBackgroundColor #438dd5
+skinparam ParticipantFontColor white
+skinparam ParticipantBorderColor #2e6295
+skinparam ActorBackgroundColor #08427b
+skinparam ActorBorderColor #08427b
+skinparam DatabaseBackgroundColor #438dd5
+skinparam DatabaseFontColor black
+skinparam QueueBackgroundColor #438dd5
+skinparam QueueFontColor black
+skinparam SequenceLifeLineBorderColor #888888
+skinparam NoteBackgroundColor #fff8c4
+skinparam NoteBorderColor #c9b200
+skinparam ArrowColor #333333
+title Iteración 1 (Disponibilidad) - Detección de brecha y recuperación de lecturas pendientes
+participant "Sensor IoT" as S #999999
+participant "Edge Gateway Agent\n(Python, SQLite)" as E #2e7d32
+participant "API Gateway" as G
+participant "monitoring-service\nTelemetry Ingestion" as M
+participant "Source Gap Detector" as D
+participant "alert-service" as A
+actor "Encargado /\nResponsable" as U
+
+S -> E : lectura (MQTT, red local)
+E -> E : guarda en SQLite\n(recorded_at, sequence_number)
+== Corte de conectividad ==
+E -x G : POST /telemetry/batches (falla)
+E -> E : retiene lecturas y reintenta\ncon backoff exponencial
+loop cada 10 s
+  D -> D : revisa last_heartbeat_at
+end
+D -> D : supera umbral sin datos
+D -> A : SourceGapDetected
+A -> U : aviso "sin datos"\n(diferente de alerta térmica)
+note right of D : brecha visible\nen <= 30 s (QA-01)
+== Reconexión ==
+E -> G : POST /telemetry/batches\n(lote ordenado + Idempotency-Key)
+G -> M : enruta
+M -> M : INSERT idempotente\nclave única (iot_device_id, recorded_at, sequence_number)
+M --> E : 202 {accepted, duplicated}
+E -> E : borra solo lecturas confirmadas
+M -> D : GapClosed
+D -> A : GapClosed
+A -> U : "datos restablecidos"
+note right of M : 100 % de lecturas retenidas\nsin duplicados en <= 5 min (QA-01)
+@enduml

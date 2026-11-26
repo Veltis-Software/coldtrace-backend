@@ -2,6 +2,7 @@ package com.acme.coldtrace.platform.assetmanagement.application.commandservices;
 
 import com.acme.coldtrace.platform.assetmanagement.domain.model.aggregates.Gateway;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.CreateGatewayCommand;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteGatewayCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.UpdateGatewayCommand;
 import com.acme.coldtrace.platform.shared.application.result.Result;
 
@@ -28,4 +29,13 @@ public interface GatewayCommandService {
      * @see UpdateGatewayCommand
      */
     Result<Gateway, GatewayCommandFailure> handle(UpdateGatewayCommand command);
+
+    /**
+     * Handles gateway deletion.
+     *
+     * @param command command containing route-scoped deletion identifiers
+     * @return success with the command or failure with a gateway command error
+     * @see DeleteGatewayCommand
+     */
+    Result<DeleteGatewayCommand, GatewayCommandFailure> handle(DeleteGatewayCommand command);
 }

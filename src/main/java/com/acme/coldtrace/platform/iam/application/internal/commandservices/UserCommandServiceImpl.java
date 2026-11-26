@@ -9,6 +9,7 @@ import com.acme.coldtrace.platform.iam.application.internal.outboundservices.tok
 import com.acme.coldtrace.platform.iam.domain.model.aggregates.User;
 import com.acme.coldtrace.platform.iam.domain.model.commands.AssignUserRoleCommand;
 import com.acme.coldtrace.platform.iam.domain.model.commands.CreateUserCommand;
+import com.acme.coldtrace.platform.iam.domain.model.commands.DeleteUserCommand;
 import com.acme.coldtrace.platform.iam.domain.model.commands.SignInCommand;
 import com.acme.coldtrace.platform.iam.domain.repositories.OrganizationRepository;
 import com.acme.coldtrace.platform.iam.domain.repositories.RoleRepository;
@@ -168,6 +169,36 @@ public class UserCommandServiceImpl implements UserCommandService {
         log.info("User role assigned: userId={}, organizationId={}, roleId={}",
                 updatedUser.getId(), updatedUser.getOrganizationId(), updatedUser.getRoleId());
         return Result.success(updatedUser);
+    }
+
+    /**
+     * Handles deletion of an organization user.
+     *
+     * @param command command containing organization and user identifiers
+     * @return success with the command or failure with a command failure type
+     * @see DeleteUserCommand
+     */
+    @Override
+    @Transactional
+    public Result<DeleteUserCommand, UserCommandFailure> handle(DeleteUserCommand command) {
+        if (!organizationRepository.existsById(command.organizationId())) {
+            log.warn("Organization not found for user deletion: organizationId={}", command.organizationId());
+            return Result.failure(new UserCommandFailure.OrganizationNotFound());
+        }
+        if (userRepository.findByIdAndOrganizationId(command.userId(), command.organizationId()).isEmpty()) {
+            log.warn("User not found for deletion: organizationId={}, userId={}",
+                    command.organizationId(), command.userId());
+            return Result.failure(new UserCommandFailure.UserNotFound());
+        }
+        try {
+            userRepository.deleteById(command.userId());
+            log.info("User deleted: id={}, organizationId={}", command.userId(), command.organizationId());
+            return Result.success(command);
+        } catch (DataIntegrityViolationException exception) {
+            log.warn("User deletion blocked by related records: organizationId={}, userId={}",
+                    command.organizationId(), command.userId());
+            return Result.failure(new UserCommandFailure.DeleteBlocked());
+        }
     }
 
     private Result<AuthenticatedUserCommandResult, ApplicationError> invalidCredentials() {

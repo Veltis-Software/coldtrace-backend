@@ -29,13 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(
-        value = {
-                "/organizations/{organizationId}/subscription",
-                "/api/v1/organizations/{organizationId}/subscription"
-        },
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/subscription", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Organization Subscriptions", description = "Endpoints for organization subscription and entitlements")
 public class OrganizationSubscriptionsController {
     private final OrganizationSubscriptionQueryService organizationSubscriptionQueryService;

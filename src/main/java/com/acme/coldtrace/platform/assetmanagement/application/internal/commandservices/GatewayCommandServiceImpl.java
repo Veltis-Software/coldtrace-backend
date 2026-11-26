@@ -4,6 +4,7 @@ import com.acme.coldtrace.platform.assetmanagement.application.commandservices.G
 import com.acme.coldtrace.platform.assetmanagement.application.commandservices.GatewayCommandService;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.aggregates.Gateway;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.CreateGatewayCommand;
+import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.DeleteGatewayCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.model.commands.UpdateGatewayCommand;
 import com.acme.coldtrace.platform.assetmanagement.domain.repositories.GatewayRepository;
 import com.acme.coldtrace.platform.assetmanagement.domain.repositories.LocationRepository;
@@ -123,6 +124,36 @@ public class GatewayCommandServiceImpl implements GatewayCommandService {
                 return Result.failure(new GatewayCommandFailure.DuplicateUuid());
             }
             throw exception;
+        }
+    }
+
+    /**
+     * Handles deletion of a gateway aggregate.
+     *
+     * @param command command containing route-scoped deletion identifiers
+     * @return success with the command or failure with a gateway command error
+     * @see DeleteGatewayCommand
+     */
+    @Override
+    @Transactional
+    public Result<DeleteGatewayCommand, GatewayCommandFailure> handle(DeleteGatewayCommand command) {
+        if (!organizationRepository.existsById(command.organizationId())) {
+            log.warn("Organization not found for gateway deletion: organizationId={}", command.organizationId());
+            return Result.failure(new GatewayCommandFailure.OrganizationNotFound());
+        }
+        if (gatewayRepository.findByIdAndOrganizationId(command.gatewayId(), command.organizationId()).isEmpty()) {
+            log.warn("Gateway not found for deletion: organizationId={}, gatewayId={}",
+                    command.organizationId(), command.gatewayId());
+            return Result.failure(new GatewayCommandFailure.GatewayNotFound());
+        }
+        try {
+            gatewayRepository.deleteById(command.gatewayId());
+            log.info("Gateway deleted: id={}, organizationId={}", command.gatewayId(), command.organizationId());
+            return Result.success(command);
+        } catch (DataIntegrityViolationException exception) {
+            log.warn("Gateway deletion blocked by related records: organizationId={}, gatewayId={}",
+                    command.organizationId(), command.gatewayId());
+            return Result.failure(new GatewayCommandFailure.DeleteBlocked());
         }
     }
 

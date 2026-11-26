@@ -56,6 +56,23 @@ public class ResponseEntityFromLocationCommandResultAssembler {
         );
     }
 
+    /**
+     * Converts a location deletion result into an HTTP response.
+     *
+     * @param result location deletion command result
+     * @param messageSource message source for localized failure details
+     * @return 204 response on success or error response on failure
+     */
+    public static ResponseEntity<?> toResponseEntityFromDeleteResult(
+            Result<?, LocationCommandFailure> result,
+            MessageSource messageSource
+    ) {
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                failure -> toFailureResponse(failure, messageSource)
+        );
+    }
+
     private static ResponseEntity<?> toFailureResponse(
             LocationCommandFailure failure,
             MessageSource messageSource
@@ -71,6 +88,7 @@ public class ResponseEntityFromLocationCommandResultAssembler {
 
     private static HttpStatus statusFromFailure(LocationCommandFailure failure) {
         if (failure instanceof LocationCommandFailure.DuplicateName ||
+                failure instanceof LocationCommandFailure.DeleteBlocked ||
                 failure instanceof LocationCommandFailure.PlanLimitExceeded) {
             return HttpStatus.CONFLICT;
         }

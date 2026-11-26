@@ -32,13 +32,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(
-        value = {
-                "/organizations/{organizationId}/billing/checkout-sessions",
-                "/api/v1/organizations/{organizationId}/billing/checkout-sessions"
-        },
-        produces = APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/billing/checkout-sessions", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Billing Checkout Sessions", description = "Endpoints for provider-hosted billing checkout")
 public class BillingCheckoutSessionsController {
     private final BillingCheckoutSessionCommandService billingCheckoutSessionCommandService;

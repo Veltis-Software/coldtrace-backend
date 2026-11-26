@@ -45,7 +45,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/organizations/{organizationId}/technical-service-requests", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/organizations/{organizationId}/technical-service-requests", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Technical Service Requests", description = "Endpoints for corrective maintenance service requests")
 public class TechnicalServiceRequestsController {
     private final TechnicalServiceRequestCommandService technicalServiceRequestCommandService;

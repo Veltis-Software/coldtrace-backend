@@ -15,13 +15,19 @@ public sealed interface IoTDeviceCommandFailure
         IoTDeviceCommandFailure.IncompatibleAssetLocation,
         IoTDeviceCommandFailure.IoTDeviceNotFound,
         IoTDeviceCommandFailure.DuplicateUuid,
-        IoTDeviceCommandFailure.PlanLimitExceeded {
+        IoTDeviceCommandFailure.DeleteBlocked,
+        IoTDeviceCommandFailure.PlanLimitExceeded,
+        IoTDeviceCommandFailure.ManagedSourceConfiguration {
     /**
      * Returns the message key associated with the failure.
      *
      * @return message key to resolve through i18n
      */
     String messageKey();
+
+    record ManagedSourceConfiguration() implements IoTDeviceCommandFailure {
+        public String messageKey() { return "asset-management.iot-device.error.managed-source"; }
+    }
 
     /**
      * Returns optional arguments for message interpolation.
@@ -77,6 +83,14 @@ public sealed interface IoTDeviceCommandFailure
         @Override
         public String messageKey() {
             return "asset-management.iot-device.error.uuid.duplicate";
+        }
+    }
+
+    /** IoT device deletion blocked by dependent records. */
+    record DeleteBlocked() implements IoTDeviceCommandFailure {
+        @Override
+        public String messageKey() {
+            return "asset-management.iot-device.error.delete-blocked";
         }
     }
 

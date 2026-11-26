@@ -1,0 +1,7 @@
+3fde2c3 | 2026-10-09T18:47:41-05:00 | chore(tp1): add permission-checked publication and source handoff tooling
+7ab0a8b | 2026-10-09T18:45:38-05:00 | test(tp1): record tenant isolation and observed deployment recovery evidence
+7349bba | 2026-10-09T18:42:37-05:00 | build(tp1): prepare isolated Docker deployment and independent repository exports
+6e4d48a | 2026-10-09T18:41:02-05:00 | feat(edge): retain unconfirmed telemetry in SQLite [ADR-0005]
+1cdf43f | 2026-10-09T18:41:02-05:00 | feat(alert): consume events atomically with durable in-app notifications [ADR-0010]
+f40b28d | 2026-10-09T18:41:01-05:00 | feat(monitoring): extract idempotent telemetry and state routes [ADR-0006]
+a095de0 | 2026-10-09T18:32:03-05:00 | feat(shared): add versioned events and correlation primitives

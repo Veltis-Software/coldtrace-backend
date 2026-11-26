@@ -84,10 +84,10 @@ public class WebSecurityConfiguration {
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
                                 "/webjars/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/subscription-plans", "/api/v1/subscription-plans").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/subscription-plans").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/billing/stripe/webhooks").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/password-reset-requests").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/organization-sign-ups").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/organization-sign-ups").permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

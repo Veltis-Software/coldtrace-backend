@@ -31,6 +31,9 @@ public interface IoTDeviceRepository {
      */
     Optional<IoTDevice> findByIdAndOrganizationId(Long id, Long organizationId);
 
+    /** Serializes source association changes with legacy device writes. Requires a transaction. */
+    Optional<IoTDevice> lockByIdAndOrganizationId(Long id, Long organizationId);
+
     /**
      * Persists an IoT device aggregate.
      *
@@ -57,4 +60,12 @@ public interface IoTDeviceRepository {
      * @return true when another device uses the uuid
      */
     boolean existsByOrganizationIdAndUuidAndIdNot(Long organizationId, String uuid, Long id);
+
+    /**
+     * Deletes an IoT device by identifier after the application service has
+     * checked organization ownership.
+     *
+     * @param id IoT device identifier
+     */
+    void deleteById(Long id);
 }

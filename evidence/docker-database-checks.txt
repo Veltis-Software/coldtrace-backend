@@ -1,0 +1,7 @@
+mysql: [Warning] Using a password on the command line interface can be insecure.
+readings	devices
+1657	50
+duplicate_keys
+0
+pending_outbox
+0

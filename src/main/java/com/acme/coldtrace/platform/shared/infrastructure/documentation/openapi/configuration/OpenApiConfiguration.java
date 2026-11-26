@@ -67,6 +67,9 @@ public class OpenApiConfiguration {
                 .info(info)
                 .servers(List.of(
                         new Server()
+                                .url("/")
+                                .description("Current Swagger UI host"),
+                        new Server()
                                 .url(localServerUrl)
                                 .description("Local development"),
                         new Server()
