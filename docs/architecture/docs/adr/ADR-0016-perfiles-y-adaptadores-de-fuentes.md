@@ -25,9 +25,11 @@ debe validar y persistir el contrato y contexto canónicos antes de evaluar.
 
 Sprint 2 implementa el registro local, los adaptadores y la normalización en
 `coldtrace-edge-gateway`, seguidos por validación y persistencia del contexto
-canónico en Monitoring. La administración de asociaciones por organización y su
-historial continúa como incremento siguiente; las historias completas conservan
-su estado de trabajo hasta integrar esos criterios.
+canónico en Monitoring. Asset Management conserva sus agregados y administra las
+asociaciones con revisión esperada, historial y Outbox transaccional. Monitoring
+proyecta las revisiones consecutivas y valida el origen efectivo en recordedAt;
+las lecturas anteriores al reemplazo conservan su interpretación. Edge recarga el
+registro completo desde archivo validado sin recrear SQLite ni los lotes.
 
 ## Consecuencias y verificación
 

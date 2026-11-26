@@ -35,6 +35,10 @@ public interface IoTDevicePersistenceRepository extends JpaRepository<IoTDeviceP
     @EntityGraph(attributePaths = "measurementParameters")
     Optional<IoTDevicePersistenceEntity> findByIdAndOrganizationId(Long id, Long organizationId);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select d from IoTDevicePersistenceEntity d where d.id = :id and d.organizationId = :organizationId")
+    Optional<IoTDevicePersistenceEntity> lockByIdAndOrganizationId(Long id, Long organizationId);
+
     /**
      * Checks whether an IoT device uuid already exists in an organization.
      *

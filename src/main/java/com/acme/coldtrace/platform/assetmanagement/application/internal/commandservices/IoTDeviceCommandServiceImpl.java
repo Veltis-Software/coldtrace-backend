@@ -44,19 +44,22 @@ public class IoTDeviceCommandServiceImpl implements IoTDeviceCommandService {
     private final AssetRepository assetRepository;
     private final OrganizationRepository organizationRepository;
     private final SubscriptionBillingContextFacade subscriptionBillingContextFacade;
+    private final com.acme.coldtrace.platform.assetmanagement.domain.repositories.SourceConfigurationRepository sourceConfigurations;
 
     public IoTDeviceCommandServiceImpl(
             IoTDeviceRepository iotDeviceRepository,
             GatewayRepository gatewayRepository,
             AssetRepository assetRepository,
             OrganizationRepository organizationRepository,
-            SubscriptionBillingContextFacade subscriptionBillingContextFacade
+            SubscriptionBillingContextFacade subscriptionBillingContextFacade,
+            com.acme.coldtrace.platform.assetmanagement.domain.repositories.SourceConfigurationRepository sourceConfigurations
     ) {
         this.iotDeviceRepository = iotDeviceRepository;
         this.gatewayRepository = gatewayRepository;
         this.assetRepository = assetRepository;
         this.organizationRepository = organizationRepository;
         this.subscriptionBillingContextFacade = subscriptionBillingContextFacade;
+        this.sourceConfigurations = sourceConfigurations;
     }
 
     /**
@@ -114,11 +117,17 @@ public class IoTDeviceCommandServiceImpl implements IoTDeviceCommandService {
         if (validation.isFailure()) {
             return Result.failure(validation.failure().orElseThrow());
         }
-        var device = iotDeviceRepository.findByIdAndOrganizationId(command.iotDeviceId(), command.organizationId());
+        var device = iotDeviceRepository.lockByIdAndOrganizationId(command.iotDeviceId(), command.organizationId());
         if (device.isEmpty()) {
             log.warn("IoT device not found for update: organizationId={}, iotDeviceId={}",
                     command.organizationId(), command.iotDeviceId());
             return Result.failure(new IoTDeviceCommandFailure.IoTDeviceNotFound());
+        }
+        if (sourceConfigurations.find(command.organizationId(), command.iotDeviceId()).isPresent()
+                && (!java.util.Objects.equals(device.get().getAssetId(), command.assetId())
+                || !java.util.Objects.equals(device.get().getGatewayId(), command.gatewayId())
+                || !device.get().getUuid().equals(command.uuid()))) {
+            return Result.failure(new IoTDeviceCommandFailure.ManagedSourceConfiguration());
         }
         if (iotDeviceRepository.existsByOrganizationIdAndUuidAndIdNot(
                 command.organizationId(), command.uuid(), command.iotDeviceId())) {
@@ -152,10 +161,13 @@ public class IoTDeviceCommandServiceImpl implements IoTDeviceCommandService {
             log.warn("Organization not found for IoT device deletion: organizationId={}", command.organizationId());
             return Result.failure(new IoTDeviceCommandFailure.OrganizationNotFound());
         }
-        if (iotDeviceRepository.findByIdAndOrganizationId(command.iotDeviceId(), command.organizationId()).isEmpty()) {
+        if (iotDeviceRepository.lockByIdAndOrganizationId(command.iotDeviceId(), command.organizationId()).isEmpty()) {
             log.warn("IoT device not found for deletion: organizationId={}, iotDeviceId={}",
                     command.organizationId(), command.iotDeviceId());
             return Result.failure(new IoTDeviceCommandFailure.IoTDeviceNotFound());
+        }
+        if (sourceConfigurations.find(command.organizationId(), command.iotDeviceId()).isPresent()) {
+            return Result.failure(new IoTDeviceCommandFailure.ManagedSourceConfiguration());
         }
         try {
             iotDeviceRepository.deleteById(command.iotDeviceId());

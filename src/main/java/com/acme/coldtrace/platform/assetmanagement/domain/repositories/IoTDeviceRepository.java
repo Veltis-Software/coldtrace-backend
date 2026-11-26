@@ -31,6 +31,9 @@ public interface IoTDeviceRepository {
      */
     Optional<IoTDevice> findByIdAndOrganizationId(Long id, Long organizationId);
 
+    /** Serializes source association changes with legacy device writes. Requires a transaction. */
+    Optional<IoTDevice> lockByIdAndOrganizationId(Long id, Long organizationId);
+
     /**
      * Persists an IoT device aggregate.
      *

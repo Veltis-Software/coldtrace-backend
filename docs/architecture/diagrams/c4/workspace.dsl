@@ -1,4 +1,4 @@
-workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - Grupo 13). Iteraciones ADD 0-3. Disponibilidad, rendimiento e interoperabilidad." {
+workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - Grupo 13). Iteraciones ADD 0-4. Disponibilidad, rendimiento, interoperabilidad y usabilidad." {
 
     !identifiers hierarchical
 
@@ -25,7 +25,12 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
                 buffer = component "Durable Buffer" "SQLite WAL conserva secuencias y lotes estables hasta confirmación completa." "SQLite Repository"
                 sender = component "Durable Batch Sender" "Reintenta lotes canónicos v1 con la misma clave idempotente y envía heartbeat." "HTTP Adapter"
             }
-            web = container "Web Application" "Paneles de monitoreo, alertas, incidencias y reportes (responsive)." "Angular" "Web"
+            web = container "Web Application" "Paneles de monitoreo, alertas, incidencias y reportes (responsive)." "Angular" "Web" {
+                inbox = component "Alert Inbox" "Lista incidencias, notificaciones y enlaces a detalle e historial." "Angular AlertInbox"
+                detail = component "Alert Detail View" "Conserva contexto, valida la acción y presenta reconocimiento, asignación y deshacer." "Angular AlertDetailView"
+                history = component "Incident History" "Conserva filtros, presenta autores y acciones y exporta la consulta a CSV." "Angular IncidentList"
+                session = component "Session and API Client" "Envía la sesión vigente y distingue carga, resultado y error." "Angular IncrementApi"
+            }
             gateway = container "API Gateway" "Punto de entrada único; enruta cada ruta al microservicio o al backend de referencia (Strangler Fig)." "Spring Cloud Gateway"
 
             identity = container "identity-service" "Usuarios, roles, organizaciones y sesiones (JWT)." "Java, Spring Boot"
@@ -153,6 +158,14 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         coldtrace.monitoring.ingestion -> coldtrace.monitoring.validator "Valida contrato canónico v1"
         coldtrace.monitoring.validator -> coldtrace.monitoring.evaluator "Entrega lectura compatible"
 
+        # --- Iteración 4: atención y consulta sobre los servicios existentes ---
+        gustavo -> coldtrace.web.inbox "Consulta y atiende incidencias" "HTTPS"
+        sofia -> coldtrace.web.inbox "Supervisa y revisa el historial" "HTTPS"
+        coldtrace.web.inbox -> coldtrace.web.detail "Abre el contexto de la incidencia"
+        coldtrace.web.inbox -> coldtrace.web.history "Abre el historial"
+        coldtrace.web.detail -> coldtrace.web.session "Solicita detalle y envía comandos"
+        coldtrace.web.history -> coldtrace.web.session "Consulta historial filtrado"
+        coldtrace.web.session -> coldtrace.gateway "Conserva el token de sesión" "REST/JSON"
         # --- Despliegue ---
         prod = deploymentEnvironment "Producción" {
             deploymentNode "Dispositivo del usuario" "Escritorio o móvil" "Navegador web" {
@@ -254,6 +267,11 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
             autoLayout tb 200 150
         }
 
+        component coldtrace.web "It4_Componentes_Web" "Iteración 4 (Usabilidad) - Atención con contexto, validación y feedback sobre el pipeline de la Iteración 3." {
+            include gustavo sofia coldtrace.web.inbox coldtrace.web.detail coldtrace.web.history coldtrace.web.session coldtrace.gateway
+            autoLayout lr 200 150
+        }
+
         deployment coldtrace prod "Despliegue" "Diagrama de despliegue de ColdTrace en Google Cloud." {
             include *
             exclude rMonAlertSync rMonAssetSync
@@ -319,3 +337,4 @@ workspace "ColdTrace - Veltis Software" "Modelo C4 de ColdTrace (TF 1ASI0657 - G
         }
     }
 }
+
